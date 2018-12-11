@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Leetcode Pairing Chrome Extension</title>
+</head>
+<body>
+	<div>Test</div>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.dev.js"></script>
+	<script>
+	document.onreadystatechange = function () {
+	  if (document.readyState === 'complete') {
+		var socket = io.connect('http://localhost:5000/');
+		console.log(io);
+		socket.on('connected', function(msg) {
+			console.log('client connected on socket io, some data: ' + msg.data);
+		});
+	  }
+	}	  
+	</script>
+</body>
+</html>
