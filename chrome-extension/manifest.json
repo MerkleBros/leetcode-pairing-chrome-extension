@@ -1,26 +1,35 @@
 {
   // Required
-  "manifest_version": 1,
+  "manifest_version": 2,
   "name": "Leetcode Pairing",
   "version": "1.0.0",
 
   // Recommended
-  "default_locale": "en",
   "description": "A chrome extension for pairing on Leetcode problems",
   // "icons": {...},
 
   // Pick one (or none)
-   "page_action": {
+  "browser_action": {
     "default_icon": {                    // optional
-      "16": "images/icon16.png",           // optional
+      "16": "icon16.png"          // optional
     },
     "default_title": "Leetcode Pairing",      // optional; shown in tooltip
     "default_popup": "popup.html"        // optional
   },
-  "background": {
-    "scripts": ["background.js"],
-    "persistent": false
-  },
+  // "background": {
+  //   // "scripts": ["background.js"],
+  //   "persistent": false
+  // },
+  // "content_scripts": [
+  //   {
+  //     "matches": ["http://*/*", "http://*/*"],
+  //     "js": ["background.js"],
+  //     "run_at": "document_end"
+  //   }
+  // ],
+  
+  "permissions": ["tabs", "activeTab", "<all_urls>"]
+
   // // Optional
   // "action": ...,
   // "author": ...,
