@@ -5,7 +5,7 @@
   "scripts": {
     "start-server": "node server.js",
     "build": "webpack",
-    "start": "webpack-dev-server --open"
+    "start": "webpack-dev-server --inline --hot --open --watch-content-base --progress"
   },
   "dependencies": {
     "express": "*",
