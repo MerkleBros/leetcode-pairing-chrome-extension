@@ -1,3 +1,7 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './roomStyles.css';
+
 const data = {
   problem:{title:"Easy Problem",
            difficulty:"easy",
