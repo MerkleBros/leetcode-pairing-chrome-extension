@@ -3,7 +3,7 @@
   "description": "",
   "version": "0.0.0",
   "scripts": {
-    "start": "node server.js",
+    "start-server": "node server.js",
     "build": "webpack",
     "start": "webpack-dev-server --open"
   },
