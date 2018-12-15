@@ -20,13 +20,13 @@
   //   // "scripts": ["background.js"],
   //   "persistent": false
   // },
-  // "content_scripts": [
-  //   {
-  //     "matches": ["http://*/*", "http://*/*"],
-  //     "js": ["background.js"],
-  //     "run_at": "document_end"
-  //   }
-  // ],
+  "content_scripts": [
+    {
+      "matches": ["https://leetcode.com/problems/*"],
+      "js": ["background.js"],
+      "run_at": "document_end"
+    }
+  ],
   
   "permissions": ["tabs", "activeTab", "<all_urls>"]
 
