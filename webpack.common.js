@@ -1,4 +1,5 @@
 const path = require('path');
+const webpack = require('webpack');
 const HtmlWebPackPlugin = require("html-webpack-plugin");
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 
@@ -8,21 +9,23 @@ module.exports = {
 		'room': './src/room/room.js'
 	},
 	output: {
-		filename: '[name].bundle.js',
+		filename: '[name].[contenthash].bundle.js',
 		path: path.resolve(__dirname, 'dist')
 	},
 	optimization: {
 		splitChunks: {
 			chunks: 'all'
-		}
+		},
+		runtimeChunk: 'single'
 	},
 	plugins: [
 		new CleanWebpackPlugin(['dist']),
 		new HtmlWebPackPlugin({
 			template: "./src/index.html",
 			filename: "index.html"
-		})
-    ],
+		}),
+		new webpack.HashedModuleIdsPlugin()
+	],
   	module: {
     	rules: [
 			{
