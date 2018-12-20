@@ -5,7 +5,8 @@ const path = require('path');
 module.exports = merge(common, {
 	entry: {
 		'lobby': './src/lobby/lobby.js',
-		'room': './src/room/room.js'
+		'room': './src/room/room.js',
+		'app': './src/app.js'
 	},
 	output: {
 		filename: '[name].[contentHash].bundle.js',

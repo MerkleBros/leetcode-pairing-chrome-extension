@@ -2,17 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './roomStyles.css';
 
-const data = {
-  problem:{title:"Easy Problem",
-           difficulty:"easy",
-           number: 666,
-           description: 'Determine if NP=P'
-          },
-  partner: {
-    name: 'Hello Kitty',
-    avatarUrl: 'https://placekitten.com/g/64/64'
-  }
-};
+
 
 class StatusBar extends React.Component{
   constructor(props){
@@ -31,22 +21,13 @@ class StatusBar extends React.Component{
   }
 }
 
-class App extends React.Component {
+export class Room extends React.Component {
   constructor(props){
     super(props)
-    this.properties=props.datas
   }
   render(){
     return (<React.Fragment>
-      <StatusBar  id="bar" partner={this.properties.partner} />
+      <StatusBar  id="bar" partner={this.props.partner} />
       </React.Fragment>)
   }
 }
- 
-ReactDOM.render(
-  <App datas={data} />,
-  document.getElementById('root')
-);
-     // <Problem problem={this.props.problem} />
-    //      <Code />
-     //     <Notes />
