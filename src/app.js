@@ -21,34 +21,33 @@ const data = {
 class App extends React.Component{
   constructor(props){
     super(props)
-    this.state={currentPage:"room" }
+    this.state={currentPage:"lobby" }
+    this.goToRoom=this.goToRoom.bind(this)
+    this.goToLobby=this.goToLobby.bind(this)
   }
 
 
-  changePage(page){
-  	this.setState({currentPage:page })
+  goToRoom(){
+  	this.setState({currentPage:"room" })
+  }
+  goToLobby(){
+  	this.setState({currentPage:"lobby" })
   }
 
   render(){
-	const {
-		currentPage
-	} = this.state
+
+	let page
+	if (this.state.currentPage=="room") page =  
+		<Room partner={data} goToLobby={this.goToLobby} />;
+	if (this.state.currentPage=="lobby") page =  
+		<Lobby goToRoom={this.goToRoom} />;
+
 	return (
 		<div id={this.props.id}>
-			
-			<button onClick={() => {this.changePage("room")}}>room</button>
-			<button onClick={() => {this.changePage("lobby")}}>lobby</button>
-			
-			{ currentPage === 'room'
-			  ? <Room partner={data} />
-			  : '' 
-			}
-		    { currentPage === 'lobby'
-			  ? <Lobby />
-			  : '' 
-			}
+			Leetcode Pairing
+			{page}
 		</div>
-		)
+	)
   }
 }
 

@@ -17,6 +17,8 @@ class StatusBar extends React.Component{
             You are pairing with: {this.partner.name} <span>&nbsp;</span>
             Partner Status:   {this.state.partnerConnected ? "connected" : "disconnected"} <span>&nbsp;</span>
             Partner is:{this.state.partnerAction}
+
+
         </div>)
   }
 }
@@ -28,6 +30,7 @@ export class Room extends React.Component {
   render(){
     return (<React.Fragment>
       <StatusBar  id="bar" partner={this.props.partner} />
+      <button onClick={this.props.goToLobby}>back to lobby</button>
       </React.Fragment>)
   }
 }
