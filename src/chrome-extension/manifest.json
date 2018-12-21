@@ -22,8 +22,9 @@
   // },
   "content_scripts": [
     {
-      "matches": ["https://leetcode.com/problems/*"],
-      "js": ["background.js"],
+      //"matches": ["https://leetcode.com/problems/*"],
+      "matches": ["http://*/*","https://*/*"], 
+      "js": ["content.js"],
       "run_at": "document_end"
     }
   ],
