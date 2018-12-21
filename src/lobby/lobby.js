@@ -7,7 +7,6 @@ export class Lobby extends React.Component{
     super(props)
   }
 
-
   render(){
      return (
         <div id={this.props.id}>

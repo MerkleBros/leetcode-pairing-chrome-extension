@@ -2,6 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 const HtmlWebPackPlugin = require("html-webpack-plugin");
 const CleanWebpackPlugin = require('clean-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
 	optimization: {
@@ -16,6 +17,7 @@ module.exports = {
 			template: "./src/index.html",
 			filename: "index.html"
 		}),
+		new CopyWebpackPlugin([{from: 'src/chrome-extension'}]),
 		new webpack.HashedModuleIdsPlugin()
 	],
   	module: {
