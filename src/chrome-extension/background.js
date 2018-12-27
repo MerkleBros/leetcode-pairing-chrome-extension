@@ -12,3 +12,20 @@ chrome.runtime.onInstalled.addListener(function() {
     ]);
   });
 });
+
+let data = {
+  leetCodeTabId: undefined
+}
+
+chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+  if (message.type=="popupIsGivingBackgroundTheLeetcodeTabId"){
+    data.leetCodeTabId=message.leetCodeTabId;
+    sendResponse({type: "gotTabId"});
+  }
+
+  if (message.type=="appWantsLeetCodeId"){
+    sendResponse({
+          leetCodeTabId: data.leetCodeTabId
+      }); 
+  }
+});

@@ -5,18 +5,31 @@ import './lobby/lobbyStyles.css';
 import { Room } from './room/room.js';
 import { Lobby } from './lobby/lobby.js';
 
+let data = {
+  leetCodeTabId: undefined,
+  problem: undefined,
+  partner: undefined
+}
 
-const data = {
-  problem:{title:"Easy Problem",
-           difficulty:"easy",
-           number: 666,
-           description: 'Determine if NP=P'
-          },
-  partner: {
-    name: 'Hello Kitty',
-    avatarUrl: 'https://placekitten.com/g/64/64'
+chrome.runtime.sendMessage(
+  {type: "appWantsLeetCodeId"},
+  function (response){
+    data.leetCodeTabId = response.leetCodeTabId;
+    requestProblemData();
   }
-};
+);
+
+function requestProblemData(){
+  chrome.tabs.sendMessage(
+    data.leetCodeTabId, 
+    {type: "requestProblemData"}, 
+    function(response) {
+      data.problem = response.problem;
+      data.partner = response.partner;
+    }
+  );
+}
+
 
 class App extends React.Component{
   constructor(props){
