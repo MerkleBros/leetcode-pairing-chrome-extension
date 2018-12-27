@@ -6,30 +6,27 @@
 
   // Recommended
   "description": "A chrome extension for pairing on Leetcode problems",
-  // "icons": {...},
 
-  // Pick one (or none)
-  "browser_action": {
-    "default_icon": {                    // optional
-      "16": "icon16.png"          // optional
-    },
-    "default_title": "Leetcode Pairing",      // optional; shown in tooltip
-    "default_popup": "popup.html"        // optional
+  "page_action" :
+  {
+    "default_icon" : "icon16.png",
+    "default_title" : "Leetcode Pairing",
+    "default_popup": "popup.html"
   },
-  // "background": {
-  //   // "scripts": ["background.js"],
-  //   "persistent": false
-  // },
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
   "content_scripts": [
     {
-      //"matches": ["https://leetcode.com/problems/*"],
-      "matches": ["http://*/*","https://*/*"], 
+      "matches": ["https://leetcode.com/problems/*"],
+      //"matches": ["http://*/*","https://*/*"], 
       "js": ["content.js"],
       "run_at": "document_end"
     }
   ],
   
-  "permissions": ["tabs", "activeTab", "<all_urls>"]
+  "permissions": ["tabs", "activeTab", "declarativeContent"]
 
   // // Optional
   // "action": ...,
