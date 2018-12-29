@@ -7,7 +7,7 @@
   // Recommended
   "description": "A chrome extension for pairing on Leetcode problems",
 
-  "page_action" :
+  "browser_action" :
   {
     "default_icon" : "icon16.png",
     "default_title" : "Leetcode Pairing",

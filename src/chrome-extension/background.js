@@ -1,25 +1,19 @@
-chrome.runtime.onInstalled.addListener(function() {
-  chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
-    chrome.declarativeContent.onPageChanged.addRules([
-      {
-        conditions: [
-          new chrome.declarativeContent.PageStateMatcher({
-            pageUrl: { urlContains: 'https://leetcode.com/problems/' },
-          })
-        ],
-        actions: [ new chrome.declarativeContent.ShowPageAction() ]
-      }
-    ]);
-  });
-});
+function setNotOnLeetCode() {
+  data.onLeetCode = false;
+}
+function setOnLeetCode() {
+  data.onLeetCode = true;
+}
 
 let data = {
-  leetCodeTabId: undefined
+  leetCodeTabId: undefined,
+  onLeetCode: false
 }
 
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   if (message.type=="popupIsGivingBackgroundTheLeetcodeTabId"){
     data.leetCodeTabId=message.leetCodeTabId;
+    data.onLeetCode = message.onLeetCode;
     sendResponse({type: "gotTabId"});
   }
 
