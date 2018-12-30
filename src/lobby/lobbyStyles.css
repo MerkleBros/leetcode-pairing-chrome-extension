@@ -1,0 +1,25 @@
+#leftHalf{
+	float: left;
+	width: 50%;
+}
+
+#rightHalf{
+	float: right;
+	width: 50%;
+}
+
+img{
+	float: left;
+	height: 35px;
+	margin-right: 10px;
+}
+
+.userListElement{
+	background-color: tan;
+	margin: 5px;
+	border: 1px solid black;
+}
+
+#chatInput{
+	width: 60%;
+}
