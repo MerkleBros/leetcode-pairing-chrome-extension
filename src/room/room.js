@@ -9,7 +9,6 @@ import './codemirror-5.42.2/theme/3024-night.css';
 class StatusBar extends React.Component{
   constructor(props){
     super(props)
-    this.partner=props.partner
     this.state={partnerConnected:false, partnerAction:"idle" }
   }
 
@@ -27,13 +26,10 @@ class StatusBar extends React.Component{
   render(){
      return (
         <div id={this.props.id}>
-            <img src={this.partner.avatarUrl} ></img>
-            You are pairing with: {this.partner.name} <span>&nbsp;</span>
+            <img src={this.props.partner.avatarUrl} ></img>
+            You are pairing with: {this.props.partner.name} <span>&nbsp;</span>
             Partner Status:   {this.state.partnerConnected ? "connected" : "disconnected"} <span>&nbsp;</span>
             Partner is:{this.state.partnerAction}
-            var options = {
-                            lineNumbers: true,
-                          };
             return <CodeMirror value={"hello world"} />
         </div>)
   }
@@ -70,11 +66,9 @@ export class Room extends React.Component {
 
   render(){
     return (<React.Fragment>
-      {//<StatusBar  id="bar" partner={this.props.partner} />
-    }
+      <StatusBar  id="bar" partner={this.props.partner} />
       <button onClick={this.props.goToLobby}>back to lobby</button><br></br>
       <div id="mirror">
-        <StatusBar value="" />
       </div>
       <Chat id="rightHalf"  />
       </React.Fragment>)
