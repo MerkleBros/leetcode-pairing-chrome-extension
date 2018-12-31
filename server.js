@@ -8,9 +8,9 @@ var hackerschool = require('hackerschool-api');
 var client = hackerschool.client();
 
 var auth = hackerschool.auth({
-  client_id: "client-id-from-rc",
-  client_secret: "client-secret-from-rc",
-  redirect_uri: "http://localhost:3000"
+  client_id: "bfcac41280381547a5e755c6668265b89ac7a8c69c0c36ad8afb02660124cb3e",
+  client_secret: "1fb71ece7517c1a2d46e11487eeb2812b68f9e71dad0c2e5e03b6b9ca4e89058",
+  redirect_uri: "http://localhost:3000/oauthCallback"
 });
 
 app.get('/login', function(req, res) {
@@ -22,14 +22,20 @@ app.get('/login', function(req, res) {
 
 app.get('/oauthCallback', function(req, res) {
   var code = req.query.code;
-
+  console.log('oauthCallback route called with code: ' + code)
   auth.getToken(code)
   .then(function(token) {
     // tells the client instance to use this token for all requests
     client.setToken(token);
+    console.log('token was set: ' + JSON.stringify(token))
+    res.redirect('dist/index.html')
   }, function(err) {
     res.send('There was an error getting the token');
   });
+});
+
+app.get('/getRCers', function(req, res) {
+
 });
 
 app.listen(3000);
