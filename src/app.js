@@ -24,15 +24,20 @@ function requestProblemData(){
     data.leetCodeTabId, 
     {type: "requestProblemData"}, 
     function(response) {
+      console.log(response)
       data.problem = response.problem;
       data.partner = response.partner;
+        ReactDOM.render(
+          <App data={data} />,
+          document.getElementById('root')
+        );
     }
   );
 }
 
-
 class App extends React.Component{
   constructor(props){
+    console.log(props)
     super(props)
     this.state={currentPage:"lobby" }
     this.goToRoom=this.goToRoom.bind(this)
@@ -51,8 +56,7 @@ class App extends React.Component{
 
 	let page
 	if (this.state.currentPage=="room") page =  
-    <Room goToLobby={this.goToLobby} />;
-		//<Room partner={data.partner} goToLobby={this.goToLobby} />;
+		<Room partner={this.props.data.partner} goToLobby={this.goToLobby} />;
 	if (this.state.currentPage=="lobby") page =  
 		<Lobby goToRoom={this.goToRoom} />;
 
@@ -64,8 +68,3 @@ class App extends React.Component{
 	)
   }
 }
-
-ReactDOM.render(
-  <App datas={[]} />,
-  document.getElementById('root')
-);
