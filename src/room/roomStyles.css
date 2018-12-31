@@ -2,3 +2,14 @@
   background-color: green;
   color:red;  
 }
+
+#mirror{
+	border: 1px solid grey;
+	width:49%;
+	float: left;
+}
+
+#rightHalf{
+	width: 50%;
+	float: right;
+}

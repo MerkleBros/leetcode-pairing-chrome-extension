@@ -51,7 +51,8 @@ class App extends React.Component{
 
 	let page
 	if (this.state.currentPage=="room") page =  
-		<Room partner={data.partner} goToLobby={this.goToLobby} />;
+    <Room goToLobby={this.goToLobby} />;
+		//<Room partner={data.partner} goToLobby={this.goToLobby} />;
 	if (this.state.currentPage=="lobby") page =  
 		<Lobby goToRoom={this.goToRoom} />;
 

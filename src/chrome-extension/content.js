@@ -15,3 +15,7 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 		sendResponse(data); 
 	}
 });
+
+console.log("content is working")
+let description= document.getElementsByClassName("__PY_Q")
+console.log("description: "+JSON.stringify(description))

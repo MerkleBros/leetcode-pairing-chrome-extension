@@ -10,16 +10,28 @@
 
 img{
 	float: left;
-	height: 35px;
+	height: 45px;
 	margin-right: 10px;
 }
 
 .userListElement{
 	background-color: tan;
 	margin: 5px;
+	padding: 5px;
 	border: 1px solid black;
+	border-radius: 3px
 }
 
-#chatInput{
-	width: 60%;
+#submitButton{
+	display: block;
+	width: 81%;
+}
+
+textarea {
+   resize: none;
+   width: 80%
+}
+
+.userName{
+	font-size: 125%
 }
