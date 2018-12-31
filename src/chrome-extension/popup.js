@@ -5,6 +5,8 @@ let pairOnOthersButton = document.getElementById("pair-on-others");
 pairOnMineButton.addEventListener('click', () => startApp());
 pairOnOthersButton.addEventListener('click', () => openLobby());
 
+let globalTabs = undefined;
+
 onLeetCode().then(function(isOnLeetCode) {
 	if (isOnLeetCode) enablePairOnMine();
 	else disablePairOnMine();
@@ -16,6 +18,7 @@ async function onLeetCode() {
 			resolve(tabs);
 		});
 	});
+	globalTabs = tabs;
 	if (!NOT_ON_LEETCODE_REGEX.test(tabs[0].url)) {return true;}
 	return false;
 }
@@ -35,7 +38,7 @@ function sendBackgroundLeetCodeTab() {
 	chrome.runtime.sendMessage(
 	  {
 	  	type: "popupIsGivingBackgroundTheLeetcodeTabId",
-	   	leetCodeTabId: tabs[0].id,
+	   	leetCodeTabId: globalTabs[0].id,
 	   	onLeetCode: true
 	  },
 	  function(response){
