@@ -16,6 +16,7 @@ module.exports = merge(common, {
 	devtool: 'inline-source-map',
 	devServer: {
 		writeToDisk: true,
-		contentBase: './dist'
+		contentBase: './dist',
+		disableHostCheck: true
 	}
 });

@@ -7,11 +7,12 @@ const data = {
   partner: {
     name: 'Hello Kitty',
     avatarUrl: 'https://placekitten.com/g/64/64'
-  }
+  },
+  authenticationCode: undefined
 };
 
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 	if (message.type == "requestProblemData"){
 		sendResponse(data); 
-	}
+  }
 });

@@ -1,3 +1,4 @@
+import "@babel/polyfill";
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './room/roomStyles.css';
@@ -5,33 +6,128 @@ import './lobby/lobbyStyles.css';
 import { Room } from './room/room.js';
 import { Lobby } from './lobby/lobby.js';
 
+const SERVER_AUTHENTICATION_URL = "http://localhost:3000/login";
+
 let data = {
+  appTabId: undefined,
   leetCodeTabId: undefined,
   problem: undefined,
-  partner: undefined
+  partner: undefined,
+  authenticationCode: undefined
 }
 
-chrome.runtime.sendMessage(
-  {type: "appWantsLeetCodeId"},
-  function (response){
-    data.leetCodeTabId = response.leetCodeTabId;
-    requestProblemData();
-  }
-);
+async function initializeApp() {
+  data.appTabId = await getAppTabId();
+  await sendBackgroundAppTabId();
+  data.leetCodeTabId =  await getLeetCodeTabId();
 
-function requestProblemData(){
-  chrome.tabs.sendMessage(
-    data.leetCodeTabId, 
-    {type: "requestProblemData"}, 
-    function(response) {
-      console.log(response)
-      data.problem = response.problem;
-      data.partner = response.partner;
-        ReactDOM.render(
-          <App data={data} />,
-          document.getElementById('root')
-        );
-    }
+  if(data.leetCodeTabId) {
+    let problemData = await requestProblemData();
+    console.log('problem data: ' + JSON.stringify(problemData));
+    data.problem = problemData.problem;
+    data.partner = problemData.partner;
+    console.log('data.partner: ' + data.partner);
+  }
+  
+  await getAuthentication();
+  data.authenticationCode = await getAuthenticationCode();
+  renderApp(data);
+}
+
+async function getAppTabId() {
+  return new Promise(function(resolve, reject) {
+    chrome.tabs.query(
+      {currentWindow: true, active : true},
+      function(tabArray) {
+        resolve(tabArray[0].id);
+        return;
+      }
+    )
+  });
+}
+async function getLeetCodeTabId() {
+  return new Promise(function(resolve, reject) {
+    chrome.runtime.sendMessage(
+      {type: "appWantsLeetCodeId"},
+      function (response){
+        resolve(response.leetCodeTabId);
+        return;
+      }
+    );
+  });
+}
+
+async function requestProblemData(){
+  return new Promise(function(resolve, reject) {
+    chrome.tabs.sendMessage(
+      data.leetCodeTabId, 
+      {type: "requestProblemData"}, 
+      function(response) {
+        let problemData = {
+          problem: response.problem,
+          partner: response.partner
+        }
+        resolve(problemData);
+        return;
+      }
+    );
+  }); 
+}
+
+async function sendBackgroundAppTabId() {
+  return new Promise(function(resolve, reject) {
+    chrome.runtime.sendMessage(
+      {
+        type: "appSendingBackgroundAppTabId",
+        appTabId: data.appTabId 
+      },
+      function(response) {
+        resolve();
+        return;
+      }
+    );
+  });
+}
+async function getAuthentication() {
+  return new Promise(function(resolve, reject) {
+    chrome.runtime.sendMessage(
+      {
+        type: "appWantsAuthentication",
+        serverAuthenticationUrl: SERVER_AUTHENTICATION_URL
+      },
+      function(response) {
+        resolve();
+        return;
+      }
+    );
+  });
+}
+
+async function getAuthenticationCode() {
+  return new Promise(function(resolve, reject) {
+    chrome.runtime.sendMessage(
+      {
+        type: "appWantsAuthenticationCode"
+      },
+      function(response) {
+        // console.log('received auth code: ' + JSON.stringify(response));
+        chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+          let responseFunction = sendResponse;
+          if(message.type == "backgroundSendingAppAuthenticationCode") {
+            resolve(message.authenticationCode);
+            return;
+          }
+          return true;
+        });
+      }
+    );
+  });
+}
+
+function renderApp(appData) {
+  ReactDOM.render(
+    <App data={appData} />,
+    document.getElementById('root')
   );
 }
 
@@ -54,6 +150,7 @@ class App extends React.Component{
 
   render(){
 
+  console.log(this.props.data);
 	let page
 	if (this.state.currentPage=="room") page =  
 		<Room partner={this.props.data.partner} goToLobby={this.goToLobby} />;
@@ -68,3 +165,5 @@ class App extends React.Component{
 	)
   }
 }
+
+initializeApp();
