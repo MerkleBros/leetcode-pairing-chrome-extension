@@ -7,14 +7,18 @@ import { Room } from './room/room.js';
 import { Lobby } from './lobby/lobby.js';
 
 const SERVER_AUTHENTICATION_URL = "http://localhost:3000/login";
+const ME_URL = "http://localhost:3000/getMe";
 
 let data = {
   appTabId: undefined,
   leetCodeTabId: undefined,
   problem: undefined,
   partner: undefined,
-  authenticationCode: undefined
+  authenticationCode: undefined,
+  userToken: undefined,
+  me: undefined
 }
+
 
 async function initializeApp() {
   data.appTabId = await getAppTabId();
@@ -31,6 +35,8 @@ async function initializeApp() {
   
   await getAuthentication();
   data.authenticationCode = await getAuthenticationCode();
+  await requestMe();
+  console.log(data.userToken)
   renderApp(data);
 }
 
@@ -122,6 +128,26 @@ async function getAuthenticationCode() {
       }
     );
   });
+}
+
+function requestMe(){
+  return new Promise(function(resolve,reject){
+      const request = new XMLHttpRequest();
+      request.open('GET', ME_URL+"?code="+data.authenticationCode, true);
+      request.onreadystatechange=function(){
+        data.me = JSON.parse(request.responseText);
+        data.userToken = data.me.token.token;
+        resolve();
+        console.log("me"+JSON.stringify(data.me))
+        console.log("token"+ JSON.stringify(data.userToken))
+      }
+      request.send();
+    }
+  )
+}
+
+function requestRCUserData(){
+
 }
 
 function renderApp(appData) {

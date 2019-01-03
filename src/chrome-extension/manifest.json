@@ -14,7 +14,7 @@
     "default_popup": "popup.html"
   },
   "background": {
-    "scripts": ["background.js"],
+    "scripts": ["background.js","hot-reload.js"],
     "persistent": false
   },
   "content_scripts": [

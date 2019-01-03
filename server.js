@@ -5,7 +5,10 @@ var io = require('socket.io')(server);
 var path = require('path');
 
 var hackerschool = require('hackerschool-api');
-var client = hackerschool.client();
+
+const userList = {};
+
+//var client = hackerschool.client();
 
 var auth = hackerschool.auth({
   client_id: "15fde852e88d09fa5e337d58a1293f400e27fc72fd0ae44cea039749260760b6",
@@ -24,20 +27,35 @@ app.get('/oauthCallback', function(req, res) {
   var code = req.query.code;
   console.log('oauthCallback route called with code: ' + code)
   res.send(code);
-  // auth.getToken(code)
-  // .then(function(token) {
-  //   // tells the client instance to use this token for all requests
-  //   client.setToken(token);
-  //   console.log('token was set: ' + JSON.stringify(token))
-  //   res.authenticationToken = token;
-  //   res.redirect('authenticated.html');
-  // }, function(err) {
-  //   res.send('There was an error getting the token');
-  // });
+
 });
 
-app.get('/getRCers', function(req, res) {
+app.get('/getMe', function(req, res) {
+  var code = req.query.code;
+  auth.getToken(code)
+  .then(function(token) {
 
+    var client = hackerschool.client();
+    client.setToken(token);
+    
+    client.people.me()
+    .then(function(me) {
+      let userData = {
+        token:token,
+        id:me.id,
+        firstName:me.first_name,
+        middleName:me.middle_name,
+        lastName:me.last_name,
+        hasPhoto:me.has_photo,
+        image:me.image
+      };
+      let userSession = Object.assign({client:client},userData)
+      userList[userData.id] = userSession;
+      res.send(userData);
+    });
+  }, function(err) {
+    res.send('There was an error getting the token');
+  });
 });
 
 app.listen(3000);
