@@ -35,3 +35,7 @@ textarea {
 .userName{
 	font-size: 125%
 }
+
+.belowImage{
+	clear: both;
+}

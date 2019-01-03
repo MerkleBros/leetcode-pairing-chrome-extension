@@ -52,13 +52,17 @@ app.get('/getMe', function(req, res) {
     
     client.people.me()
     .then(function(me) {
+      let name;
+      if (!me.middle_name) name=me.first_name+" "+me.last_name
+      else name=me.first_name+" "+me.middle_name+" "+me.last_name
+
       let baseUserData = {
         id:me.id,
-        firstName:me.first_name,
-        middleName:me.middle_name,
-        lastName:me.last_name,
+        name:name,
         hasPhoto:me.has_photo,
-        image:me.image
+        image:me.image,
+        hasLeetCodeProblem:false,
+        problem:undefined
       }
       let meData = Object.assign({token: token}, baseUserData)
       let userSession = Object.assign({client: client}, meData)

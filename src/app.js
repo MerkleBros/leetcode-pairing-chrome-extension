@@ -17,7 +17,8 @@ let data = {
   partner: undefined,
   authenticationCode: undefined,
   userToken: undefined,
-  me: undefined
+  me: undefined,
+  userList: undefined
 }
 
 
@@ -38,7 +39,7 @@ async function initializeApp() {
   data.authenticationCode = await getAuthenticationCode();
   await requestMe();
   await requestUserList();
-  console.log(data.userToken)
+  console.log(data)
   renderApp(data);
 }
 
@@ -161,14 +162,13 @@ async function requestUserList(){
 
 function renderApp(appData) {
   ReactDOM.render(
-    <App data={appData} />,
+    <App data={appData} userList={data.userList} me={data.me} />,
     document.getElementById('root')
   );
 }
 
 class App extends React.Component{
   constructor(props){
-    console.log(props)
     super(props)
     this.state={currentPage:"lobby" }
     this.goToRoom=this.goToRoom.bind(this)
@@ -185,12 +185,11 @@ class App extends React.Component{
 
   render(){
 
-  console.log(this.props.data);
 	let page
 	if (this.state.currentPage=="room") page =  
 		<Room partner={this.props.data.partner} goToLobby={this.goToLobby} />;
 	if (this.state.currentPage=="lobby") page =  
-		<Lobby goToRoom={this.goToRoom} />;
+		<Lobby userList={this.props.userList} me={this.props.me} goToRoom={this.goToRoom} />;
 
 	return (
 		<div id={this.props.id}>

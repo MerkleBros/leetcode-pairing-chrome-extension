@@ -53,8 +53,8 @@ export class Lobby extends React.Component{
      return (
         <div id={this.props.id}>
             <button onClick={this.props.goToRoom}>go to room</button><br></br>
-            <Chat id="rightHalf" userName={UserArr[0].profileInfo.name} />
-            <UserList id="leftHalf" UserArr={UserArr} />
+            <Chat id="rightHalf" userName={this.props.me.name} />
+            <UserList id="leftHalf" userList={this.props.userList} me={this.props.me} />
         </div>)
   }
 }
@@ -107,9 +107,10 @@ class UserList extends React.Component{
 
   createList(){
     let list=[]
-    this.props.UserArr.forEach(user=>{
-      list.push(<UserInfo user={user} 
-                          key={user.profileInfo.name} 
+    Object.values(this.props.userList).forEach(user=>{
+      list.push(<UserInfo user={user}
+                          me={this.props.me} 
+                          key={user.id} 
                           className="userListElement" 
                           selectUser={this.selectUser} 
                           currentUser={this.state.selectedUser}  />)
@@ -132,18 +133,44 @@ class UserInfo extends React.Component{
     this.toggleDescription=this.toggleDescription.bind(this)
   }
 
+  renderProfilePic(){
+    if (this.props.user.hasPhoto){
+      return <img src={this.props.user.image} ></img>
+    }
+  }
+
   renderPairingButton(){
-    if (myName!=this.props.user.profileInfo.name){
+    if (this.props.me.id!=this.props.user.id){
       return <button>Pair With Me</button>
     }
   }
+
   renderDescription(){
-    if (this.state.showDescription && this.props.currentUser==this.props.user.profileInfo.name) 
-      return this.props.user.problem.description
+    if(this.state.showDescription && this.props.currentUser==this.props.user.name){ 
+        return this.props.user.problem.description
+      }
   }
+
+  renderProblemInfo(){
+    if (this.props.user.hasLeetCodeProblem){
+      return <div>
+        <strong>Problem #</strong> {this.props.user.problem.number} <span>&nbsp;</span>
+        <strong>Title:</strong> {this.props.user.problem.title} <span>&nbsp;</span>
+        <strong>Difficulty:</strong> {this.props.user.problem.difficulty} <span>&nbsp;</span>
+        <strong>Language:</strong> {this.props.user.problem.language}
+        <button onClick={this.toggleDescription}>
+        Problem Description:</button><br></br>
+        {this.renderDescription()}
+      </div>
+    }
+    else{
+      return <div>I would like to help you with your LeetCode problem.</div>
+    }
+  }
+
   toggleDescription(){
-    if (this.props.currentUser!=this.props.user.profileInfo.name){
-      this.props.selectUser(this.props.user.profileInfo.name);
+    if (this.props.currentUser!=this.props.user.id){
+      this.props.selectUser(this.props.user.id);
       this.setState({showDescription:true})
     }
     else this.setState({showDescription:!this.state.showDescription})
@@ -152,17 +179,12 @@ class UserInfo extends React.Component{
   render(){
      return (
         <div className={this.props.className}>
-          <img src={this.props.user.profileInfo.avatarUrl} ></img>
-          <span className="userName">{this.props.user.profileInfo.name} &nbsp;</span>
+          {this.renderProfilePic()}
+          <span className="userName">{this.props.user.name} &nbsp;</span>
           {this.renderPairingButton()}
           <br></br>
-          <strong>Prob{"             "}lem #</strong> {this.props.user.problem.number} <span>&nbsp;</span>
-          <strong>Title:</strong> {this.props.user.problem.title} <span>&nbsp;</span>
-          <strong>Difficulty:</strong> {this.props.user.problem.difficulty} <span>&nbsp;</span>
-          <strong>Language:</strong> {this.props.user.problem.language}
-          <button onClick={this.toggleDescription}>
-          Problem Description:</button><br></br>
-          {this.renderDescription()}
+          {this.renderProblemInfo()}
+          <br className="belowImage"></br>
         </div>)
   }
 }
