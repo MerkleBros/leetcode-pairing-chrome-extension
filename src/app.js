@@ -8,6 +8,7 @@ import { Lobby } from './lobby/lobby.js';
 
 const SERVER_AUTHENTICATION_URL = "http://localhost:3000/login";
 const ME_URL = "http://localhost:3000/getMe";
+const USER_LIST_URL = "http://localhost:3000/getUserList";
 
 let data = {
   appTabId: undefined,
@@ -36,6 +37,7 @@ async function initializeApp() {
   await getAuthentication();
   data.authenticationCode = await getAuthenticationCode();
   await requestMe();
+  await requestUserList();
   console.log(data.userToken)
   renderApp(data);
 }
@@ -130,24 +132,31 @@ async function getAuthenticationCode() {
   });
 }
 
-function requestMe(){
+function sendRequest({url,query = "",headerType,headerData}){
   return new Promise(function(resolve,reject){
       const request = new XMLHttpRequest();
-      request.open('GET', ME_URL+"?code="+data.authenticationCode, true);
+      request.open('GET', url+query, true);
+      if (headerType){
+        request.setRequestHeader(headerType,headerData)
+      }
       request.onreadystatechange=function(){
-        data.me = JSON.parse(request.responseText);
-        data.userToken = data.me.token.token;
-        resolve();
-        console.log("me"+JSON.stringify(data.me))
-        console.log("token"+ JSON.stringify(data.userToken))
+        resolve(JSON.parse(request.responseText));
       }
       request.send();
     }
   )
 }
 
-function requestRCUserData(){
+async function requestMe(){
+  data.me = await sendRequest({url: ME_URL,query:"?code="+data.authenticationCode})
+  data.userToken = data.me.token.token;
+}
 
+async function requestUserList(){
+  data.userList = await sendRequest({
+                          url: USER_LIST_URL,
+                          headerType: 'Authorization',
+                          headerData: "Bearer " + JSON.stringify(data.userToken)})
 }
 
 function renderApp(appData) {

@@ -6,7 +6,8 @@ var path = require('path');
 
 var hackerschool = require('hackerschool-api');
 
-const userList = {};
+const serverUserList = {};
+const clientUserList = {};
 
 //var client = hackerschool.client();
 
@@ -30,6 +31,17 @@ app.get('/oauthCallback', function(req, res) {
 
 });
 
+app.get('/getUserList', function(req,res){
+  res.send(clientUserList)
+});
+
+app.get('/getRCData',function(req,res){
+  let token = req.header('Authorization')
+  //console.log(token.slice(7))
+  //res.send()
+});
+
+
 app.get('/getMe', function(req, res) {
   var code = req.query.code;
   auth.getToken(code)
@@ -40,18 +52,21 @@ app.get('/getMe', function(req, res) {
     
     client.people.me()
     .then(function(me) {
-      let userData = {
-        token:token,
+      let baseUserData = {
         id:me.id,
         firstName:me.first_name,
         middleName:me.middle_name,
         lastName:me.last_name,
         hasPhoto:me.has_photo,
         image:me.image
-      };
-      let userSession = Object.assign({client:client},userData)
-      userList[userData.id] = userSession;
-      res.send(userData);
+      }
+      let meData = Object.assign({token: token}, baseUserData)
+      let userSession = Object.assign({client: client}, meData)
+
+      serverUserList[baseUserData.id] = userSession;
+      clientUserList[baseUserData.id] = baseUserData;
+
+      res.send(meData);
     });
   }, function(err) {
     res.send('There was an error getting the token');
