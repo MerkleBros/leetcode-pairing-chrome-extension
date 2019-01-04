@@ -179,6 +179,7 @@ function renderApp(appData) {
 
 class App extends React.Component{
   constructor(props){
+    console.log(props)
     super(props)
     this.state={currentPage:"lobby" }
     this.goToRoom=this.goToRoom.bind(this)
