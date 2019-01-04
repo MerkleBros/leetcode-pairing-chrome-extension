@@ -5,6 +5,12 @@ var io = require('socket.io')(server);
 var path = require('path');
 var hackerschool = require('hackerschool-api');
 
+var port = process.env.PORT || 3000;
+var serverUrl = 
+  process.env.PORT ? 
+  "https://serene-peak-49404.herokuapp.com" :
+  "http://localhost:3000"
+
 var bodyParser = require("body-parser");
 
 //Here we are configuring express to use body-parser as middle-ware.
@@ -14,13 +20,22 @@ app.use(bodyParser.json());
 const serverUserList = {};
 const clientUserList = {};
 
-//var client = hackerschool.client();
+let auth;
+if(process.env.PORT) {
+  auth = hackerschool.auth({
+    client_id: "171c0be3d344bb8c36fd2ec72f4df3b92c6620b43dbcbc5b255415e27d609da5",
+    client_secret: "39d74251728bf3119454d2b36982592186382755726de4c58eb7b35736e569ec",
+    redirect_uri: serverUrl + "/oauthCallback"
+  });
+}
+else {
+  auth = hackerschool.auth({
+    client_id: "15fde852e88d09fa5e337d58a1293f400e27fc72fd0ae44cea039749260760b6",
+    client_secret: "763a70d494f2a7ef3c9074988bccf0a485dca6ef29bd3aa9738a667500bb8266",
+    redirect_uri: serverUrl + "/oauthCallback"
+  }); 
+}
 
-var auth = hackerschool.auth({
-  client_id: "15fde852e88d09fa5e337d58a1293f400e27fc72fd0ae44cea039749260760b6",
-  client_secret: "763a70d494f2a7ef3c9074988bccf0a485dca6ef29bd3aa9738a667500bb8266",
-  redirect_uri: "http://localhost:3000/oauthCallback"
-});
 
 app.get('/login', function(req, res) {
   var authUrl = auth.createAuthUrl();
@@ -97,18 +112,23 @@ app.get('/getUserList', function(req,res){
   res.send(clientUserList)
 });
 
-app.listen(3000);
+app.listen(port);
 //app.use(express.static(__dirname)); // Current directory is root
 app.use(express.static(path.join(__dirname, 'public'))); //  "public" off of current is root
 
 app.get('/', function(req, res){
-  res.sendFile(__dirname + '/index.html');
+ res.send("it works")
 });
 
 io.on('connection', function(socket){
   console.log('a user connected');
   socket.emit('connected', {data: 5});
 });
+
+app.use(function (err, req, res, next) {
+  console.error(err.stack)
+  res.status(500).send('Something broke!')
+})
 
 server.listen(5000);
 console.log('Listening on port 5000');

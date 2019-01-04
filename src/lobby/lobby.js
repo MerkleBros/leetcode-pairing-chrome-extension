@@ -159,7 +159,7 @@ class UserInfo extends React.Component{
       return <div>
         <strong>Problem:</strong> {this.props.user.problem.title} <span>&nbsp;</span>
         <strong>Difficulty:</strong> {this.props.user.problem.difficulty} <span>&nbsp;</span>
-        <strong>Language:</strong> {this.props.user.problem.language}
+        <strong>Language:</strong> {this.props.user.problem.language} <span>&nbsp;</span>
         <button onClick={this.toggleDescription}>
         Problem Description:</button>
         {this.renderDescription()}

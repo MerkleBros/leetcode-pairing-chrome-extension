@@ -6,10 +6,14 @@ import './lobby/lobbyStyles.css';
 import { Room } from './room/room.js';
 import { Lobby } from './lobby/lobby.js';
 
-const SERVER_AUTHENTICATION_URL = "http://localhost:3000/login";
-const ME_URL = "http://localhost:3000/getMe";
-const USER_LIST_URL = "http://localhost:3000/getUserList";
-const POST_PROBLEM_URL = "http://localhost:3000/postProblem";
+const BASE_URL = "https://serene-peak-49404.herokuapp.com";
+const TESTING_BASE_URL = "http://localhost:3000";
+const CURRENT_URL = BASE_URL;
+
+const SERVER_AUTHENTICATION_URL = CURRENT_URL + "/login";
+const ME_URL = CURRENT_URL + "/getMe";
+const USER_LIST_URL = CURRENT_URL + "/getUserList";
+const POST_PROBLEM_URL = CURRENT_URL + "/postProblem";
 
 let data = {
   appTabId: undefined,
