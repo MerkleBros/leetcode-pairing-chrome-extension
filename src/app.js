@@ -9,6 +9,7 @@ import { Lobby } from './lobby/lobby.js';
 const SERVER_AUTHENTICATION_URL = "http://localhost:3000/login";
 const ME_URL = "http://localhost:3000/getMe";
 const USER_LIST_URL = "http://localhost:3000/getUserList";
+const POST_PROBLEM_URL = "http://localhost:3000/postProblem";
 
 let data = {
   appTabId: undefined,
@@ -18,7 +19,7 @@ let data = {
   authenticationCode: undefined,
   userToken: undefined,
   me: undefined,
-  userList: undefined
+  userList: undefined,
 }
 
 async function initializeApp() {
@@ -27,14 +28,15 @@ async function initializeApp() {
   data.leetCodeTabId =  await getLeetCodeTabId();
 
   if(data.leetCodeTabId) {
-    let problemData = await requestProblemData();
-    console.log('problem data: ' + JSON.stringify(problemData));
-    data.problem = problemData;
+    data.problem = await requestProblemData();
   }
-  
+
   await getAuthentication();
   data.authenticationCode = await getAuthenticationCode();
   await requestMe();
+  if (data.problem){
+    await postProblem();
+  }
   await requestUserList();
   console.log(data)
   renderApp(data);
@@ -145,6 +147,20 @@ function sendRequest({url,query = "",headerType,headerData}){
 async function requestMe(){
   data.me = await sendRequest({url: ME_URL,query:"?code="+data.authenticationCode})
   data.userToken = data.me.token.token;
+}
+
+async function postProblem(){
+  return new Promise(function(resolve,reject){
+    const request = new XMLHttpRequest();   // new HttpRequest instance 
+    request.open("POST", POST_PROBLEM_URL, true);
+    request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    let problem=JSON.stringify(data.problem);
+    request.onreadystatechange=function(){
+      resolve();
+      return;
+    }
+    request.send(JSON.stringify({id:data.me.id,problem:problem}));
+  })
 }
 
 async function requestUserList(){

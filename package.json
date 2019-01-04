@@ -10,6 +10,7 @@
   "dependencies": {
     "@babel/polyfill": "^7.2.5",
     "@babel/runtime": "^7.2.0",
+    "body-parser": "^1.18.3",
     "code-mirror": "^4.0.1",
     "express": "*",
     "hackerschool-api": "^0.1.1",

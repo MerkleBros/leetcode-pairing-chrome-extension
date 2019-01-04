@@ -3,8 +3,13 @@ var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 var path = require('path');
-
 var hackerschool = require('hackerschool-api');
+
+var bodyParser = require("body-parser");
+
+//Here we are configuring express to use body-parser as middle-ware.
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 const serverUserList = {};
 const clientUserList = {};
@@ -31,16 +36,11 @@ app.get('/oauthCallback', function(req, res) {
 
 });
 
-app.get('/getUserList', function(req,res){
-  res.send(clientUserList)
-});
-
 app.get('/getRCData',function(req,res){
   let token = req.header('Authorization')
   //console.log(token.slice(7))
   //res.send()
 });
-
 
 app.get('/getMe', function(req, res) {
   var code = req.query.code;
@@ -62,7 +62,9 @@ app.get('/getMe', function(req, res) {
         hasPhoto:me.has_photo,
         image:me.image,
         hasLeetCodeProblem:false,
-        problem:undefined
+        problem:undefined,
+        isPairingNow:false,
+        isPairingHost:false
       }
       let meData = Object.assign({token: token}, baseUserData)
       let userSession = Object.assign({client: client}, meData)
@@ -75,6 +77,24 @@ app.get('/getMe', function(req, res) {
   }, function(err) {
     res.send('There was an error getting the token');
   });
+});
+
+app.post('/postProblem', function(req,res){
+  var id=req.body.id;
+  var problem=req.body.problem;
+
+  serverUserList[id].hasLeetCodeProblem = true;
+  clientUserList[id].hasLeetCodeProblem = true;
+
+  serverUserList[id].problem = JSON.parse(problem);
+  clientUserList[id].problem = JSON.parse(problem);
+
+  res.send("got it")
+});
+
+
+app.get('/getUserList', function(req,res){
+  res.send(clientUserList)
 });
 
 app.listen(3000);

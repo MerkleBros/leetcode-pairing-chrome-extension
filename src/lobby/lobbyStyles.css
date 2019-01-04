@@ -15,7 +15,7 @@ img{
 }
 
 .userListElement{
-	background-color: tan;
+	background-color: #F5DEB3;
 	margin: 5px;
 	padding: 5px;
 	border: 1px solid black;
@@ -38,4 +38,8 @@ textarea {
 
 .belowImage{
 	clear: both;
+}
+
+.preserveFormatting{
+	white-space: pre-wrap;
 }

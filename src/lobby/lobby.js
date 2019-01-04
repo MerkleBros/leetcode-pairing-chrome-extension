@@ -101,8 +101,8 @@ class UserList extends React.Component{
     this.selectUser=this.selectUser.bind(this)
   }
   
-  selectUser(user){
-    this.setState({selectedUser:user});
+  selectUser(userID){
+    this.setState({selectedUser:userID});
   }
 
   createList(){
@@ -146,20 +146,22 @@ class UserInfo extends React.Component{
   }
 
   renderDescription(){
-    if(this.state.showDescription && this.props.currentUser==this.props.user.name){ 
-        return this.props.user.problem.description
+    if(this.state.showDescription && this.props.currentUser==this.props.user.id){ 
+        return (<div className="preserveFormatting">
+                <br></br>
+                {this.props.user.problem.description}
+               </div>)
       }
   }
 
   renderProblemInfo(){
     if (this.props.user.hasLeetCodeProblem){
       return <div>
-        <strong>Problem #</strong> {this.props.user.problem.number} <span>&nbsp;</span>
-        <strong>Title:</strong> {this.props.user.problem.title} <span>&nbsp;</span>
+        <strong>Problem:</strong> {this.props.user.problem.title} <span>&nbsp;</span>
         <strong>Difficulty:</strong> {this.props.user.problem.difficulty} <span>&nbsp;</span>
         <strong>Language:</strong> {this.props.user.problem.language}
         <button onClick={this.toggleDescription}>
-        Problem Description:</button><br></br>
+        Problem Description:</button>
         {this.renderDescription()}
       </div>
     }
