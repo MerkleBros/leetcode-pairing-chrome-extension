@@ -21,7 +21,6 @@ let data = {
   userList: undefined
 }
 
-
 async function initializeApp() {
   data.appTabId = await getAppTabId();
   await sendBackgroundAppTabId();
@@ -30,9 +29,7 @@ async function initializeApp() {
   if(data.leetCodeTabId) {
     let problemData = await requestProblemData();
     console.log('problem data: ' + JSON.stringify(problemData));
-    data.problem = problemData.problem;
-    data.partner = problemData.partner;
-    console.log('data.partner: ' + data.partner);
+    data.problem = problemData;
   }
   
   await getAuthentication();
@@ -70,13 +67,9 @@ async function requestProblemData(){
   return new Promise(function(resolve, reject) {
     chrome.tabs.sendMessage(
       data.leetCodeTabId, 
-      {type: "requestProblemData"}, 
+      {type: "appWantsProblemData"}, 
       function(response) {
-        let problemData = {
-          problem: response.problem,
-          partner: response.partner
-        }
-        resolve(problemData);
+        resolve(response);
         return;
       }
     );
@@ -97,6 +90,7 @@ async function sendBackgroundAppTabId() {
     );
   });
 }
+
 async function getAuthentication() {
   return new Promise(function(resolve, reject) {
     chrome.runtime.sendMessage(

@@ -7,10 +7,18 @@ pairOnOthersButton.addEventListener('click', () => openLobby());
 
 let globalTabs = undefined;
 
+disablePairOnMine();
+
 onLeetCode().then(function(isOnLeetCode) {
 	if (isOnLeetCode) enablePairOnMine();
-	else disablePairOnMine();
 });
+
+function promptContentScriptToGetProblemData() {
+	chrome.tabs.sendMessage(
+		globalTabs[0].id, 
+		{type: "promptContentScriptToGetProblemData"}
+	);
+}
 
 async function onLeetCode() {
 	let tabs = await new Promise(function(resolve) {
@@ -23,8 +31,29 @@ async function onLeetCode() {
 	return false;
 }
 
+async function waitForContentToGetProblemData() {
+	promptContentScriptToGetProblemData();
+	return new Promise(function(resolve, reject) {
+		chrome.runtime.onMessage.addListener(async function (message, sender, sendResponse) {
+			if (message.type === "contentScriptHasProblemData"){
+				resolve(true)
+			}
+			if (message.type === "contentScriptDoesNotHaveProblemData") {
+				resolve(false)
+			}
+		});
+	});
+}
+
 async function startApp() {
-	sendBackgroundLeetCodeTab();
+	document.getElementById("refreshMessage").innerText = "Retrieving problem data...";
+	let hasData = await waitForContentToGetProblemData();
+	if (hasData) {
+		sendBackgroundLeetCodeTab();
+	}
+	else {
+		document.getElementById("refreshMessage").innerText = "Unable to get problem data, refresh LeetCode and try again."
+	}
 }
 
 function disablePairOnMine() {
