@@ -51,13 +51,14 @@ app.get('/oauthCallback', function(req, res) {
 
 });
 
-app.get('/getRCData',function(req,res){
-  let token = req.header('Authorization')
-  //console.log(token.slice(7))
-  //res.send()
-});
+// app.get('/getRCData',function(req,res){
+//   let token = req.header('Authorization')
+//   //console.log(token.slice(7))
+//   //res.send()
+// });
 
-app.get('/getMe', function(req, res) {
+app.get('/getRCData', function(req, res) {
+  console.log("getRCData");
   var code = req.query.code;
   auth.getToken(code)
   .then(function(token) {
@@ -92,6 +93,27 @@ app.get('/getMe', function(req, res) {
   }, function(err) {
     res.send('There was an error getting the token');
   });
+});
+
+app.get('/getGuestData', function(req, res) {
+
+  let rand = Math.round(Math.random()*1000000)
+
+  let baseUserData = {
+    id: rand,
+    name: "guest_"+rand,
+    hasPhoto:false,
+    image:undefined,
+    hasLeetCodeProblem:false,
+    problem:undefined,
+    isPairingNow:false,
+    isPairingHost:false
+  }
+
+  serverUserList[baseUserData.id] = baseUserData;
+  clientUserList[baseUserData.id] = baseUserData;
+
+  res.send(baseUserData);
 });
 
 app.post('/postProblem', function(req,res){

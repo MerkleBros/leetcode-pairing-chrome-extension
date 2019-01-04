@@ -3,13 +3,24 @@ let data = {
   appTabId: undefined,
   leetCodeTabId: undefined,
   onLeetCode: false,
-  authenticationCode: undefined
+  authenticationCode: undefined,
+  loginType: undefined
 }
 
 chrome.runtime.onMessage.addListener(async function (message, sender, sendResponse) {
   let responseFunction = sendResponse;
-  if (message.type=="popupIsGivingBackgroundTheLeetcodeTabId"){
-    data.leetCodeTabId=message.leetCodeTabId;
+  
+  if (message.type == "appWantsLoginType"){
+    sendResponse(data.loginType);
+  }
+
+  if (message.type == "popupIsGivingBackgroundTheLoginType"){
+    data.loginType = message.loginType;
+    sendResponse({type: "gotLoginType"});
+  }
+
+  if (message.type == "popupIsGivingBackgroundTheLeetcodeTabId"){
+    data.leetCodeTabId = message.leetCodeTabId;
     data.onLeetCode = message.onLeetCode;
     sendResponse({type: "gotTabId"});
   }
@@ -19,7 +30,7 @@ chrome.runtime.onMessage.addListener(async function (message, sender, sendRespon
     sendResponse({type: "gotAppTabId"});
   }
 
-  if (message.type=="appWantsLeetCodeId"){
+  if (message.type == "appWantsLeetCodeId"){
     sendResponse({
         leetCodeTabId: data.leetCodeTabId
       }); 

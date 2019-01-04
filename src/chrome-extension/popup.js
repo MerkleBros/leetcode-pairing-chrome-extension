@@ -2,6 +2,8 @@ const NOT_ON_LEETCODE_REGEX = /^(?!https\:\/\/(www\.)?leetcode\.com\/problems\/)
 let pairOnMineButton = document.getElementById("pair-on-mine");
 let pairOnOthersButton = document.getElementById("pair-on-others");
 
+
+
 pairOnMineButton.addEventListener('click', () => startApp());
 pairOnOthersButton.addEventListener('click', () => openLobby());
 
@@ -78,6 +80,22 @@ function sendBackgroundLeetCodeTab() {
 	);
 }
 
-function openLobby() {
+function sendBackgroundLoginType() { 
+	return new Promise(function(resolve,reject){
+		let loginType = document.querySelector('input[name="loginType"]:checked').value;
+		chrome.runtime.sendMessage(
+			{
+				type: "popupIsGivingBackgroundTheLoginType",
+				loginType: loginType
+			},
+			function(response){
+				resolve();
+			}
+		)
+	})
+}
+
+async function openLobby() {
+	await sendBackgroundLoginType();
 	chrome.tabs.create({"url": "index.html"});
 }

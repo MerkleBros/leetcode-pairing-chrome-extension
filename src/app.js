@@ -8,10 +8,11 @@ import { Lobby } from './lobby/lobby.js';
 
 const BASE_URL = "https://serene-peak-49404.herokuapp.com";
 const TESTING_BASE_URL = "http://localhost:3000";
-const CURRENT_URL = BASE_URL;
+const CURRENT_URL = TESTING_BASE_URL;
 
 const SERVER_AUTHENTICATION_URL = CURRENT_URL + "/login";
-const ME_URL = CURRENT_URL + "/getMe";
+const RC_DATA_URL = CURRENT_URL + "/getRCData";
+const GUEST_DATA_URL = CURRENT_URL + "/getGuestData";
 const USER_LIST_URL = CURRENT_URL + "/getUserList";
 const POST_PROBLEM_URL = CURRENT_URL + "/postProblem";
 
@@ -24,6 +25,7 @@ let data = {
   userToken: undefined,
   me: undefined,
   userList: undefined,
+  loginType: undefined
 }
 
 async function initializeApp() {
@@ -35,15 +37,35 @@ async function initializeApp() {
     data.problem = await requestProblemData();
   }
 
-  await getAuthentication();
-  data.authenticationCode = await getAuthenticationCode();
-  await requestMe();
+  data.loginType = await requestLoginType();
+
+  if (data.loginType == "RC"){
+    await getAuthentication();
+    data.authenticationCode = await getAuthenticationCode();
+    data.me = await requestRCData();
+    data.userToken = data.me.token.token;
+  }
+  else{
+    data.me = await requestGuestData();
+  }
+
   if (data.problem){
     await postProblem();
   }
   await requestUserList();
   console.log(data)
   renderApp(data);
+}
+
+async function requestLoginType(){
+  return new Promise(function(resolve, reject) {
+    chrome.runtime.sendMessage(
+      {type: "appWantsLoginType"},
+      function (response){
+        resolve(response);
+        return;
+      })
+  })
 }
 
 async function getAppTabId() {
@@ -148,10 +170,17 @@ function sendRequest({url,query = "",headerType,headerData}){
   )
 }
 
-async function requestMe(){
-  data.me = await sendRequest({url: ME_URL,query:"?code="+data.authenticationCode})
-  data.userToken = data.me.token.token;
+async function requestRCData(){
+  let me = await sendRequest({url: RC_DATA_URL,query:"?code="+data.authenticationCode})
+  return me;
 }
+
+async function requestGuestData(){
+  let me = await sendRequest({url: GUEST_DATA_URL})
+  return me;
+}
+
+
 
 async function postProblem(){
   return new Promise(function(resolve,reject){
