@@ -53,7 +53,7 @@ export class Lobby extends React.Component{
      return (
         <div id={this.props.id}>
             <button onClick={this.props.goToRoom}>go to room</button><br></br>
-            <Chat id="rightHalf" userName={this.props.me.name} />
+            <Chat id="rightHalf" userName={this.props.me.name} socket={this.props.socket} />
             <UserList id="leftHalf" userList={this.props.userList} me={this.props.me} />
         </div>)
   }
@@ -62,24 +62,35 @@ export class Lobby extends React.Component{
 class Chat extends React.Component{
   constructor(props){
     super(props)
-    this.state={chatLog:"",
-                chatInput:""}
+    this.state={
+      chatLog:"",
+      chatInput:""
+    }
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.listenToChat = this.listenToChat.bind(this);
+    this.listenToChat();
   }
 
+  listenToChat(){
+    this.props.socket.on('lobbyChatMessage',(function(msg) {
+      this.setState({
+        chatLog: (this.state.chatLog + msg)
+      });
+    }).bind(this));
+  }
+  
   handleChange(event) {
     this.setState({chatInput: event.target.value});
   }
 
   handleSubmit(event) {
     event.preventDefault();
-
-        this.setState({
-          chatLog:this.state.chatLog+=this.props.userName+": "+
-          this.state.chatInput+"\n",
-          chatInput:""
-        })
+    let chatLog = this.props.userName+ ": " + this.state.chatInput+"\n"
+    this.props.socket.emit('lobbyChatMessage', chatLog);
+    this.setState({
+      chatInput:""
+    })
   }
 
   render(){

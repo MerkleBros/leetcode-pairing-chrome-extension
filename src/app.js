@@ -5,6 +5,8 @@ import './room/roomStyles.css';
 import './lobby/lobbyStyles.css';
 import { Room } from './room/room.js';
 import { Lobby } from './lobby/lobby.js';
+import io from 'socket.io-client';
+
 
 const BASE_URL = "https://serene-peak-49404.herokuapp.com";
 const TESTING_BASE_URL = "http://localhost:3000";
@@ -54,6 +56,7 @@ async function initializeApp() {
   }
   await requestUserList();
   console.log(data)
+  connectSocket();
   renderApp(data);
 }
 
@@ -210,6 +213,11 @@ function renderApp(appData) {
   );
 }
 
+function connectSocket(){
+    data.socket = io.connect('http://localhost:5000/');
+    data.socket.on('connected', function(msg) {});
+}
+
 class App extends React.Component{
   constructor(props){
     console.log(props)
@@ -218,7 +226,6 @@ class App extends React.Component{
     this.goToRoom=this.goToRoom.bind(this)
     this.goToLobby=this.goToLobby.bind(this)
   }
-
 
   goToRoom(){
   	this.setState({currentPage:"room" })
@@ -231,9 +238,17 @@ class App extends React.Component{
 
 	let page
 	if (this.state.currentPage=="room") page =  
-		<Room partner={this.props.data.partner} goToLobby={this.goToLobby} />;
+		<Room 
+      partner={this.props.data.partner} 
+      goToLobby={this.goToLobby} 
+    />;
 	if (this.state.currentPage=="lobby") page =  
-		<Lobby userList={this.props.userList} me={this.props.me} goToRoom={this.goToRoom} />;
+		<Lobby 
+      socket={data.socket}
+      userList={this.props.userList} 
+      me={this.props.me} 
+      goToRoom={this.goToRoom}
+    />;
 
 	return (
 		<div id={this.props.id}>

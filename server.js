@@ -143,7 +143,9 @@ app.get('/', function(req, res){
 });
 
 io.on('connection', function(socket){
-  console.log('a user connected');
+  socket.on('lobbyChatMessage', function (msg) {
+    io.emit('lobbyChatMessage', msg);
+  });
   socket.emit('connected', {data: 5});
 });
 
