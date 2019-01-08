@@ -25,8 +25,8 @@
       "run_at": "document_end"
     },
     {
-       "matches": ["http://localhost:3000/oauthCallback*"],
-      //"matches": ["https://serene-peak-49404.herokuapp.com/oauthCallback*"],      
+      "matches": ["http://localhost:3000/oauthCallback*"],
+      "matches": ["https://serene-peak-49404.herokuapp.com/oauthCallback*"],      
       "js": ["contentTwo.js"],
       "run_at": "document_end"
     }
