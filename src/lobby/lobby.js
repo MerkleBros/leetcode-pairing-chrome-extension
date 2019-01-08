@@ -2,58 +2,35 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './lobbyStyles.css';
 
-const UserArr = [
-  {
-    problem:{title:"Easy Problem",
-             difficulty:"hard",
-             number: 666,
-             description: 'Determine if NP=P',
-             language:"javascript"
-            },
-    profileInfo: {
-      name: 'Hello Kitty',
-      avatarUrl: 'https://placekitten.com/g/64/64'
-    }
-  },
-  {
-    problem:{title:"Interesting Problem",
-             difficulty:"hard",
-             number: 555,
-             description: 'Determine if P=P',
-             language:"lavascript"
-            },
-    profileInfo: {
-      name: 'Goodbye Kitty',
-      avatarUrl: 'https://placekitten.com/g/64/64'
-    }
-  },
-  {
-    problem:{title:"Boring Problem",
-             difficulty:"easy",
-             number: 444,
-             description: 'Determine if 1=2',
-             language:"scriptscript"
-            },
-    profileInfo: {
-      name: 'Other Kitty',
-      avatarUrl: 'https://placekitten.com/g/64/64'
-    }
-  }
-];
+// const UserArr = [
+//   {
+//     problem:{title:"Easy Problem",
+//              difficulty:"hard",
+//              number: 666,
+//              description: 'Determine if NP=P',
+//              language:"javascript"
+//             },
+//     profileInfo: {
+//       name: 'Hello Kitty',
+//       avatarUrl: 'https://placekitten.com/g/64/64'
+//     }
+//   }
+// ];
 
-let myName="Hello Kitty"
+// let myName="Hello Kitty"
 
 
 export class Lobby extends React.Component{
   constructor(props){
     super(props)
+    console.log(this.props)
   }
 
   render(){
      return (
         <div id={this.props.id}>
             <button onClick={this.props.goToRoom}>go to room</button><br></br>
-            <Chat id="rightHalf" userName={this.props.me.name} socket={this.props.socket} />
+            <Chat id="rightHalf" me={this.props.me} socket={this.props.socket} />
             <UserList id="leftHalf" userList={this.props.userList} me={this.props.me} />
         </div>)
   }
@@ -86,7 +63,7 @@ class Chat extends React.Component{
 
   handleSubmit(event) {
     event.preventDefault();
-    let chatLog = this.props.userName+ ": " + this.state.chatInput+"\n"
+    let chatLog = this.props.me.name + ": " + this.state.chatInput+"\n"
     this.props.socket.emit('lobbyChatMessage', chatLog);
     this.setState({
       chatInput:""
@@ -130,6 +107,7 @@ class UserList extends React.Component{
   }
 
   render(){
+     {console.log(this.props)}
      return (
       <div id={this.props.id}>
         {this.createList()}
@@ -151,7 +129,8 @@ class UserInfo extends React.Component{
   }
 
   renderPairingButton(){
-    if (this.props.me.id!=this.props.user.id){
+    if (this.props.me.id!=this.props.user.id && 
+      (this.props.me.hasLeetCodeProblem || this.props.user.hasLeetCodeProblem)){
       return <button>Pair With Me</button>
     }
   }

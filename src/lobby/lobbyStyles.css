@@ -1,11 +1,14 @@
 #leftHalf{
-	float: left;
-	width: 50%;
+	overflow-y: auto;
+    overflow-x: hidden;
+    float: left;
+    width: 46%;
+    max-height: 400px;
 }
 
 #rightHalf{
 	float: right;
-	width: 50%;
+	width: 46%;
 }
 
 img{
@@ -24,12 +27,12 @@ img{
 
 #submitButton{
 	display: block;
-	width: 81%;
+	width: 91%;
 }
 
 textarea {
    resize: none;
-   width: 80%
+   width: 90%;
 }
 
 .userName{

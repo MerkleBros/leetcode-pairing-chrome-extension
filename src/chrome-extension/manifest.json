@@ -21,7 +21,7 @@
     {
       "matches": ["https://leetcode.com/problems/*"],
       //"matches": ["http://*/*","https://*/*"], 
-      "js": ["content.js"],
+      "js": ["socket.io.js","content.js"],
       "run_at": "document_end"
     },
     {

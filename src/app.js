@@ -7,10 +7,10 @@ import { Room } from './room/room.js';
 import { Lobby } from './lobby/lobby.js';
 import io from 'socket.io-client';
 
-
 const BASE_URL = "https://serene-peak-49404.herokuapp.com";
 const TESTING_BASE_URL = "http://localhost:3000";
 const CURRENT_URL = TESTING_BASE_URL;
+const WEBSOCKET_URL='http://localhost:5000/';
 
 const SERVER_AUTHENTICATION_URL = CURRENT_URL + "/login";
 const RC_DATA_URL = CURRENT_URL + "/getRCData";
@@ -19,15 +19,15 @@ const USER_LIST_URL = CURRENT_URL + "/getUserList";
 const POST_PROBLEM_URL = CURRENT_URL + "/postProblem";
 
 let data = {
+  loginType: undefined,
   appTabId: undefined,
   leetCodeTabId: undefined,
   problem: undefined,
   partner: undefined,
   authenticationCode: undefined,
   userToken: undefined,
-  me: undefined,
-  userList: undefined,
-  loginType: undefined
+  initialMe:undefined,
+  initialUserList: undefined,
 }
 
 async function initializeApp() {
@@ -37,27 +37,38 @@ async function initializeApp() {
 
   if(data.leetCodeTabId) {
     data.problem = await requestProblemData();
+    console.log('data.problem:');
+    console.log(data.problem);
   }
 
   data.loginType = await requestLoginType();
 
+
   if (data.loginType == "RC"){
     await getAuthentication();
     data.authenticationCode = await getAuthenticationCode();
-    data.me = await requestRCData();
-    data.userToken = data.me.token.token;
+    data.initialMe = await requestRCData();
+    data.userToken = data.initialMe.token.token;
   }
   else{
-    data.me = await requestGuestData();
+    data.initialMe = await requestGuestData();
   }
 
   if (data.problem){
+    // data.initialMe.hasLeetCodeProblem=true;
+    // data.initialMe.problem = data.problem;
     await postProblem();
   }
   await requestUserList();
-  console.log(data)
-  connectSocket();
+  data.socket = connectSocket();
   renderApp(data);
+  startHeartBeat();
+}
+
+function startHeartBeat(){
+  setInterval(function(){
+    data.socket.emit('heartBeat', data.initialMe.id);    
+  },500)
 }
 
 async function requestLoginType(){
@@ -195,36 +206,92 @@ async function postProblem(){
       resolve();
       return;
     }
-    request.send(JSON.stringify({id:data.me.id,problem:problem}));
+    request.send(JSON.stringify({id:data.initialMe.id,problem:problem}));
   })
 }
 
 async function requestUserList(){
-  data.userList = await sendRequest({
+  data.initialUserList = await sendRequest({
                           url: USER_LIST_URL,
                           headerType: 'Authorization',
                           headerData: "Bearer " + JSON.stringify(data.userToken)})
 }
 
-function renderApp(appData) {
-  ReactDOM.render(
-    <App data={appData} userList={data.userList} me={data.me} />,
-    document.getElementById('root')
-  );
+function connectSocket(){
+    let socket = io.connect(WEBSOCKET_URL);
+    socket.on('connected', function(msg) {
+        data.socket.emit('clientToken',{id:data.me.id, token: data.me.webSocketToken});
+    });
+    return socket;
 }
 
-function connectSocket(){
-    data.socket = io.connect('http://localhost:5000/');
-    data.socket.on('connected', function(msg) {});
+// window.beforeunload = function() {
+//     alert("Are you sure you want to leave this page?");
+// }
+
+function renderApp() {
+  ReactDOM.render(
+    <App socket = {data.socket} 
+    initialUserList = {data.initialUserList} 
+    initialMe = {data.initialMe} />,
+    document.getElementById('root')
+  );
 }
 
 class App extends React.Component{
   constructor(props){
     console.log(props)
     super(props)
-    this.state={currentPage:"lobby" }
+    this.state={
+      currentPage: "lobby",
+      userList: this.props.initialUserList, 
+      me: this.props.initialMe
+    }
     this.goToRoom=this.goToRoom.bind(this)
     this.goToLobby=this.goToLobby.bind(this)
+    this.listenForUpdateMe = this.listenForUpdateMe.bind(this);
+    this.listenForUpdateMe();
+    this.listenForUpdateUser = this.listenForUpdateUser.bind(this);
+    this.listenForUpdateUser();
+    this.listenForKillUser = this.listenForKillUser.bind(this);
+    this.listenForKillUser();
+    this.updateMe = this.updateMe.bind(this);
+  }
+
+  updateMe(key,value){
+    let message = {
+      id: this.state.me.id,
+      flag: key,
+      value: value
+    }
+    this.props.socket.emit('updateUser', message);
+  }
+
+  listenForUpdateMe(){
+    this.props.socket.on('updateMe',(function(user) {
+      console.log("updating "+user.id)
+      this.setState({
+        me: user
+      });
+    }).bind(this));
+  }
+
+  listenForUpdateUser(){
+    this.props.socket.on('updateUser',(function(user) {
+      console.log("updating "+user.id)
+      let updatedUserList = this.state.userList;
+      updatedUserList[user.id]=user;
+      this.setState({userList: updatedUserList});
+    }).bind(this));
+  }
+
+  listenForKillUser(){
+    this.props.socket.on('killUser',(function(id) {
+      console.log("killing "+id)
+      let updatedUserList = this.state.userList;
+      delete updatedUserList[id];
+      this.setState({userList: updatedUserList});
+    }).bind(this));
   }
 
   goToRoom(){
@@ -244,10 +311,11 @@ class App extends React.Component{
     />;
 	if (this.state.currentPage=="lobby") page =  
 		<Lobby 
-      socket={data.socket}
-      userList={this.props.userList} 
-      me={this.props.me} 
+      socket={this.props.socket}
+      userList={this.state.userList} 
+      me={this.state.me} 
       goToRoom={this.goToRoom}
+      id="lobby"
     />;
 
 	return (

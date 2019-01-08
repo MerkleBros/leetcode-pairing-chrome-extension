@@ -72,9 +72,10 @@ app.get('/getRCData', function(req, res) {
       if (!me.middle_name) name=me.first_name+" "+me.last_name
       else name=me.first_name+" "+me.middle_name+" "+me.last_name
 
+      let webSocketToken = Math.round(Math.random()*1000000000)
       let baseUserData = {
-        id:me.id,
-        name:name,
+        id: me.id,
+        name: name,
         hasPhoto:me.has_photo,
         image:me.image,
         hasLeetCodeProblem:false,
@@ -82,12 +83,11 @@ app.get('/getRCData', function(req, res) {
         isPairingNow:false,
         isPairingHost:false
       }
-      let meData = Object.assign({token: token}, baseUserData)
-      let userSession = Object.assign({client: client}, meData)
+      let meData = Object.assign({token: token, webSocketToken: webSocketToken}, baseUserData)
+      let userSession = Object.assign({client: client, heartBeats: 10}, meData);
 
-      serverUserList[baseUserData.id] = userSession;
-      clientUserList[baseUserData.id] = baseUserData;
-
+      addUserToServerUserList(userSession);
+      emitUpdateUser(userSession);
       res.send(meData);
     });
   }, function(err) {
@@ -97,7 +97,7 @@ app.get('/getRCData', function(req, res) {
 
 app.get('/getGuestData', function(req, res) {
 
-  let rand = Math.round(Math.random()*1000000)
+  let rand = Math.round(Math.random()*1000000000)
 
   let baseUserData = {
     id: rand,
@@ -109,11 +109,12 @@ app.get('/getGuestData', function(req, res) {
     isPairingNow:false,
     isPairingHost:false
   }
-
-  serverUserList[baseUserData.id] = baseUserData;
-  clientUserList[baseUserData.id] = baseUserData;
-
-  res.send(baseUserData);
+  let webSocketToken = Math.round(Math.random()*1000000000)
+  let meData = Object.assign({webSocketToken: webSocketToken}, baseUserData)
+  let userSession = Object.assign({heartBeats: 10}, meData)
+  addUserToServerUserList(userSession);
+  emitUpdateUser(userSession);
+  res.send(meData);
 });
 
 app.post('/postProblem', function(req,res){
@@ -121,17 +122,14 @@ app.post('/postProblem', function(req,res){
   var problem=req.body.problem;
 
   serverUserList[id].hasLeetCodeProblem = true;
-  clientUserList[id].hasLeetCodeProblem = true;
-
   serverUserList[id].problem = JSON.parse(problem);
-  clientUserList[id].problem = JSON.parse(problem);
 
   res.send("got it")
 });
 
 
 app.get('/getUserList', function(req,res){
-  res.send(clientUserList)
+  res.send(createClientUserList(serverUserList));
 });
 
 app.listen(port);
@@ -142,12 +140,118 @@ app.get('/', function(req, res){
  res.send("it works")
 });
 
+
 io.on('connection', function(socket){
+  console.log('user connected')
+  console.log('connection count: ' + io.engine.clientsCount);
+  
+  socket.on('clientToken', function(msg){
+    if (serverUserList[msg.id].webSocketToken == msg.token){
+      serverUserList[msg.id].socket = socket;
+    }
+    else{
+      socket.disconnect(true);
+    }
+  })
+
   socket.on('lobbyChatMessage', function (msg) {
     io.emit('lobbyChatMessage', msg);
   });
-  socket.emit('connected', {data: 5});
+
+  //TODO: FIX TO PROTECT SERVER USER DATA
+  socket.on('updateUser', function (message) {
+    // message object: {id: "", flag: "", value: ""}
+    if(serverUserList[message.id].socket.id !== socket.id) {
+      return;
+    }
+    switch (message.flag) {
+      // TODO: UPdate problem data
+      // case "updateLanguage":
+      //   serverUserList[message.id]. = message.value;
+      //   break;
+      case "updateProfileMessage":
+        serverUserList[message.id].profileMessage = message.value;
+        break;
+      case "updateIsPairingNow":
+        serverUserList[message.id].isPairingNow = message.value;
+        break;
+      case "updatePartnerId":
+        serverUserList[message.id].partnerId = message.value;
+        break;
+      case "updateIsPairingHost":
+        serverUserList[message.id].isPairingHost = message.value;
+        break;
+    }
+    console.log('updateUser')
+    socket.emit('updateMe',createMeUser(serverUserList[message.id]));
+    io.emit('updateUser', createClientUser(serverUserList[message.id]));
+  });
+
+  socket.on('heartBeat', function (userId) {
+    if (serverUserList[userId]){
+      serverUserList[userId].heartBeats = 10;
+    }
+  });
+
 });
+
+function createMeUser(user){
+  let me = createClientUser(user)
+  return Object.assign({token: user.token}, me)
+}
+
+
+function addUserToServerUserList(user) {
+  serverUserList[user.id] = user;
+  emitUpdateUser(user);
+}
+
+function emitUpdateUser(user){
+  io.emit('updateUser', createClientUser(serverUserList[user.id]));
+}
+
+function createClientUser(user) {
+  let userObject = {
+    id: user.id,
+    name: user.name,
+    hasPhoto: user.hasPhoto,
+    image: user.image,
+    hasLeetCodeProblem: user.hasLeetCodeProblem,
+    problem: user.problem,
+    isPairingNow: user.isPairingNow,
+    isPairingHost: user.isPairingHost,
+    partnerId: user.partnerId 
+  }
+  return userObject;
+}
+
+function createClientUserList(userList) {
+  let newList = {};
+  Object.values(userList).forEach((user) => {
+    newList[user.id] = createClientUser(user);
+  });
+  return newList;
+}
+
+startHeartBeat();
+
+function startHeartBeat(){
+  setInterval(function(){
+    Object.values(serverUserList).forEach(user=>{
+      user.heartBeats-=1;
+      if (user.heartBeats==0){
+        killUser(user.id);
+      }
+    })
+  },500)
+}
+
+function killUser(id){
+  console.log("killing "+id)
+  delete serverUserList[id];
+  io.emit('killUser', id);
+}
+
 
 app.use(function (err, req, res, next) {
   console.error(err.stack)

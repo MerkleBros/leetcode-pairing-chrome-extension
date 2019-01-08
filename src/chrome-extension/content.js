@@ -1,3 +1,15 @@
+const WEBSOCKET_URL='http://localhost:5000/';
+
+function connectSocket(){
+    socket = io.connect(WEBSOCKET_URL);
+    socket.on('connected', function(msg) {
+      console.log("socket connected")
+    });
+}
+
+connectSocket();
+
+
 const data = {
   problem:undefined,
   partner: {
@@ -9,8 +21,8 @@ const data = {
 //TODO:DELETE partner
 
 chrome.runtime.onMessage.addListener(async function (message, sender, sendResponse) {
-	if (message.type == "appWantsProblemData"){
-		sendResponse(data.problem); 
+  if (message.type == "appWantsProblemData"){
+    sendResponse(data.problem); 
   }
   if (message.type == "promptContentScriptToGetProblemData"){
     data.problem = await getProblemData();
@@ -46,4 +58,18 @@ function getProblemData() {
      }
    },500)
   });
+}
+
+
+
+let notesBox=addNotesBox();
+
+function addNotesBox(){
+  let textArea = document.createElement('textarea');
+  textArea.setAttribute('id', 'notesBox');
+  textArea.setAttribute('cols',55);
+  textArea.setAttribute('rows', 4);
+  textArea.setAttribute('style','position: fixed; z-index: 1000;top: 0px;');
+  document.querySelector('body').appendChild(textArea);
+  return textArea;
 }
