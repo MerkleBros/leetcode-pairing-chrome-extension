@@ -158,7 +158,6 @@ io.on('connection', function(socket){
     io.emit('lobbyChatMessage', msg);
   });
 
-  //TODO: FIX TO PROTECT SERVER USER DATA
   socket.on('updateUser', function (message) {
     // message object: {id: "", flag: "", value: ""}
     if(serverUserList[message.id].socket.id !== socket.id) {
