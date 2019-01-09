@@ -20,19 +20,20 @@
   "content_scripts": [
     {
       "matches": ["https://leetcode.com/problems/*"],
-      //"matches": ["http://*/*","https://*/*"], 
-      "js": ["socket.io.js","content.js"],
+      "js": ["socket.io.js", "content.js"],
       "run_at": "document_end"
     },
     {
-      "matches": ["http://localhost:3000/oauthCallback*"],
-      "matches": ["https://serene-peak-49404.herokuapp.com/oauthCallback*"],      
+      "matches": ["http://localhost:3000/oauthCallback*",
+        "https://serene-peak-49404.herokuapp.com/oauthCallback*"], 
       "js": ["contentTwo.js"],
       "run_at": "document_end"
     }
   ],
-  
-  "permissions": ["tabs", "activeTab", "declarativeContent"]
+  "web_accessible_resources": [
+    "main.js"  
+  ],
+  "permissions": ["<all_urls>","tabs", "activeTab", "declarativeContent"]
 
   // // Optional
   // "action": ...,

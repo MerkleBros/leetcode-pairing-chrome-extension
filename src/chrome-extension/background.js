@@ -10,6 +10,16 @@ let data = {
 chrome.runtime.onMessage.addListener(async function (message, sender, sendResponse) {
   let responseFunction = sendResponse;
   
+  if (message.type == "BackgroundShouldDeleteAllData"){
+    data = {
+      appTabId: undefined,
+      leetCodeTabId: undefined,
+      onLeetCode: false,
+      authenticationCode: undefined,
+      loginType: undefined
+    }
+  }
+
   if (message.type == "appWantsLoginType"){
     sendResponse(data.loginType);
   }

@@ -1,14 +1,17 @@
 const WEBSOCKET_URL='http://localhost:5000/';
 
+console.log('content started')
+
 function connectSocket(){
     socket = io.connect(WEBSOCKET_URL);
-    socket.on('connected', function(msg) {
+    socket.on('connect', function(msg) {
       console.log("socket connected")
     });
 }
 
 connectSocket();
 
+let codeMirrorValue='';
 
 const data = {
   problem:undefined,
@@ -24,6 +27,7 @@ chrome.runtime.onMessage.addListener(async function (message, sender, sendRespon
   if (message.type == "appWantsProblemData"){
     sendResponse(data.problem); 
   }
+
   if (message.type == "promptContentScriptToGetProblemData"){
     data.problem = await getProblemData();
     if(data.problem) {
@@ -33,6 +37,7 @@ chrome.runtime.onMessage.addListener(async function (message, sender, sendRespon
       chrome.runtime.sendMessage({type: "contentScriptDoesNotHaveProblemData"});
     }
   }
+
 });
 
 function getProblemData() {
@@ -45,16 +50,18 @@ function getProblemData() {
        return;
       }
      if (document.querySelector("div[data-key='description-content'] > div > div > div").innerText!=null){
-       let problem = {
-         title:document.querySelector("div[data-key='description-content'] > div > div > div").innerText,
-         difficulty:document.querySelector("div[data-key='description-content'] > div >div>div:nth-child(2)>div").innerText,
-         description: document.querySelector("div[data-key='description-content'] > div > div:nth-child(2)").innerText,
-         language: document.querySelector("#lang-select > div > div > div.ant-select-selection-selected-value").innerText
-       }
-       console.log("Content script received problem data: ");
-       console.log(problem);
-       clearInterval(getProblemDataLoop)
-       resolve(problem)
+      let problem = {
+        title:document.querySelector("div[data-key='description-content'] > div > div > div").innerText,
+        difficulty:document.querySelector("div[data-key='description-content'] > div >div>div:nth-child(2)>div").innerText,
+        description: document.querySelector("div[data-key='description-content'] > div > div:nth-child(2)").innerText,
+        language: document.querySelector("#lang-select > div > div > div.ant-select-selection-selected-value").innerText
+      }
+
+      //setCodeMirrorObserver();
+      startMainScript();
+
+      clearInterval(getProblemDataLoop)
+      resolve(problem)
      }
    },500)
   });
@@ -72,4 +79,35 @@ function addNotesBox(){
   textArea.setAttribute('style','position: fixed; z-index: 1000;top: 0px;');
   document.querySelector('body').appendChild(textArea);
   return textArea;
+}
+
+function setCodeMirrorObserver(){
+  let mirrorObject = document.getElementsByClassName('CodeMirror')[0].CodeMirror
+  let targetNode = document.getElementsByClassName('CodeMirror')[0];
+  console.log(targetNode)
+  var observerOptions = {
+    childList: true,
+    attributes: true,
+    subtree: true //Omit or set to false to observe only changes to the parent node.
+  }
+
+  var observer = new MutationObserver(function(){
+    let newValue= mirrorObject.getValue()
+    console.log(newValue)
+    if (newValue != codeMirrorValue){
+      //send new value to partner
+      codeMirrorValue = newValue;
+      console.log(codeMirrorValue)
+    }
+  });
+
+  observer.observe(targetNode, observerOptions);
+}
+
+function startMainScript(){
+  const script = document.createElement('script');
+  script.setAttribute("type", "module");
+  script.setAttribute("src", chrome.runtime.getURL('main.js'));
+  const head = document.head || document.getElementsByTagName("head")[0] || document.documentElement;
+  head.insertBefore(script, head.lastChild);
 }

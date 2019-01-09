@@ -9,9 +9,10 @@ module.exports = merge(common, {
 		'app': './src/app.js'
 	},
 	output: {
-		filename: '[name].[hash].bundle.js',
+		filename: '[name].js',
 		path: path.resolve(__dirname, 'dist')
 	},
+
 	mode: 'development',
 	devtool: 'inline-source-map',
 	devServer: {

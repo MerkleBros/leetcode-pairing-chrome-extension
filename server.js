@@ -146,7 +146,10 @@ io.on('connection', function(socket){
   console.log('connection count: ' + io.engine.clientsCount);
   
   socket.on('clientToken', function(msg){
+    console.log("checking client socket token")
+
     if (serverUserList[msg.id].webSocketToken == msg.token){
+      console.log("got client socket token")
       serverUserList[msg.id].socket = socket;
     }
     else{
@@ -160,9 +163,9 @@ io.on('connection', function(socket){
 
   socket.on('updateUser', function (message) {
     // message object: {id: "", flag: "", value: ""}
-    if(serverUserList[message.id].socket.id !== socket.id) {
-      return;
-    }
+    // if(serverUserList[message.id].socket.id !== socket.id) {
+    //   return;
+    // }
     switch (message.flag) {
       // TODO: UPdate problem data
       // case "updateLanguage":

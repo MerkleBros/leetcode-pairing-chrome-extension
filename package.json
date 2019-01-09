@@ -5,17 +5,17 @@
   "scripts": {
     "start-server": "nodemon server.js",
     "build": "webpack --config webpack.prod.js",
-    "start-dev": "webpack-dev-server --config webpack.dev.js --inline --hot --open --watch-content-base --progress"
+    "start-dev": "webpack-dev-server --config webpack.dev.js --inline --hot --watch-content-base --progress"
   },
   "dependencies": {
     "@babel/polyfill": "^7.2.5",
     "@babel/runtime": "^7.2.0",
     "body-parser": "^1.18.3",
-    "code-mirror": "^4.0.1",
+    "codemirror": "^5.42.2",
     "express": "*",
     "hackerschool-api": "^0.1.1",
     "nodemon": "^1.18.9",
-    "react-codemirror": "^1.0.0",
+    "react-codemirror2": "^5.1.0",
     "simple-peer": "^9.2.0",
     "socket.io": "^2.2.0",
     "socket.io-client": "^2.2.0"

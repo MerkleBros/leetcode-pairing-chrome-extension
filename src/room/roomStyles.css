@@ -3,13 +3,13 @@
   color:red;  
 }
 
-#mirror{
+#leftHalf{
 	border: 1px solid grey;
-	width:49%;
+	width:45%;
 	float: left;
 }
 
 #rightHalf{
-	width: 50%;
+	width: 45%;
 	float: right;
 }

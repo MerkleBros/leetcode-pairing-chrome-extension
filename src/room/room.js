@@ -2,9 +2,47 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './roomStyles.css';
 
-import CodeMirror from 'react-codemirror';
-import './codemirror-5.42.2/lib/codemirror.css';
-import './codemirror-5.42.2/theme/3024-night.css';
+//import {Controlled as CodeMirror} from 'react-codemirror2'
+import {UnControlled as CodeMirror} from 'react-codemirror2'
+import 'codemirror/lib/codemirror.css';
+import 'codemirror/theme/material.css';
+require('codemirror/mode/xml/xml');
+require('codemirror/mode/javascript/javascript');
+
+let codeMirrorOptions={   
+  mode: 'xml',
+  theme: 'material',
+  lineNumbers: true 
+}
+
+
+export class Room extends React.Component {
+  constructor(props){
+    super(props)
+  }
+
+  render(){
+    console.log('asdasdad')
+    return (<React.Fragment>
+      <StatusBar  id="bar" partner="zudsfefesewfewfck" />
+      <button onClick={this.props.goToLobby}>back to lobby</button><br></br>
+      <div id="leftHalf">
+      <CodeMirror
+        value='<h1>I ♥ react-codemirror2</h1>'
+        options={{
+          mode: 'xml',
+          theme: 'material',
+          lineNumbers: true
+        }}
+        onChange={(editor, data, value) => {
+        }}
+      />
+      </div>
+      <Chat id="rightHalf"  />
+  </React.Fragment>)
+  }
+}
+
 
 class StatusBar extends React.Component{
   constructor(props){
@@ -12,25 +50,13 @@ class StatusBar extends React.Component{
     this.state={partnerConnected:false, partnerAction:"idle" }
   }
 
-  getInitialState() {
-    return {
-      code: "// Code",
-    };
-  }
-  updateCode(newCode) {
-    this.setState({
-      code: newCode,
-    });
-  }
-
   render(){
      return (
         <div id={this.props.id}>
-            <img src={this.props.partner.avatarUrl} ></img>
-            You are pairing with: {this.props.partner.name} <span>&nbsp;</span>
+            <img src={"https://media.nbcchicago.com/images/652*489/092310MarkZuckerberg01.jpg"} ></img>
+            You are pairing with: {this.props.partner} <span>&nbsp;</span>
             Partner Status:   {this.state.partnerConnected ? "connected" : "disconnected"} <span>&nbsp;</span>
-            Partner is:{this.state.partnerAction}
-            return <CodeMirror value={"hello world"} />
+            Partner is: {this.state.partnerAction}
         </div>)
   }
 }
@@ -51,27 +77,3 @@ class Chat extends React.Component{
         </div>)
   }
 }
-
-export class Room extends React.Component {
-  constructor(props){
-    super(props)
-  }
-
-
-  createCodeMirror(){
-    let mirror =CodeMirror(document.body)
-    return mirror
-  }
-
-
-  render(){
-    return (<React.Fragment>
-      <StatusBar  id="bar" partner={this.props.partner} />
-      <button onClick={this.props.goToLobby}>back to lobby</button><br></br>
-      <div id="mirror">
-      </div>
-      <Chat id="rightHalf"  />
-      </React.Fragment>)
-  }
-}
-

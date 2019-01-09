@@ -7,13 +7,13 @@ import { Room } from './room/room.js';
 import { Lobby } from './lobby/lobby.js';
 import io from 'socket.io-client';
 
-const BASE_URL = "https://serene-peak-49404.herokuapp.com";
+//const BASE_URL = "https://serene-peak-49404.herokuapp.com";
 const TESTING_BASE_URL = "http://localhost:3000";
-const TESTING_WEBSOCKET_URL = 'http://localhost:5000/';
+const TESTING_WEBSOCKET_URL = 'http://localhost:5000';
 
-const CURRENT_URL = BASE_URL;
-// const WEBSOCKET_URL = TESTING_WEBSOCKET_URL;
-const WEBSOCKET_URL= BASE_URL + ':5000';
+const CURRENT_URL = TESTING_BASE_URL;
+const WEBSOCKET_URL = TESTING_WEBSOCKET_URL;
+//const WEBSOCKET_URL= BASE_URL + ':5000';
 
 const SERVER_AUTHENTICATION_URL = CURRENT_URL + "/login";
 const RC_DATA_URL = CURRENT_URL + "/getRCData";
@@ -46,6 +46,7 @@ async function initializeApp() {
 
   data.loginType = await requestLoginType();
 
+  resetBackgroundScript();
 
   if (data.loginType == "RC"){
     await getAuthentication();
@@ -63,9 +64,26 @@ async function initializeApp() {
     await postProblem();
   }
   await requestUserList();
-  data.socket = connectSocket();
+  data.socket = await connectSocket();
+
+  data.socket.on('connect', function(msg) {
+    console.log('socket connected')
+    data.socket.emit('clientToken',{id:data.initialMe.id, token: data.initialMe.webSocketToken});
+  });
+
+  // chrome.tabs.sendMessage(
+  //   data.leetCodeTabId, 
+  //   {type: "appSendingContentScriptWebSocket", socket: data.socket}, 
+  //   function(response) {
+  //     return;
+  //   })
+
   renderApp(data);
   startHeartBeat();
+}
+
+function resetBackgroundScript(){
+  chrome.runtime.sendMessage({type: "BackgroundShouldDeleteAllData"})
 }
 
 function startHeartBeat(){
@@ -220,13 +238,14 @@ async function requestUserList(){
                           headerData: "Bearer " + JSON.stringify(data.userToken)})
 }
 
-function connectSocket(){
+async function connectSocket(){
+  return new Promise(function(res){
     let socket = io.connect(WEBSOCKET_URL);
-    socket.on('connected', function(msg) {
-        data.socket.emit('clientToken',{id:data.me.id, token: data.me.webSocketToken});
-    });
-    return socket;
+    console.log(socket)
+    res(socket);
+  })
 }
+
 
 // window.beforeunload = function() {
 //     alert("Are you sure you want to leave this page?");
@@ -259,6 +278,7 @@ class App extends React.Component{
     this.listenForKillUser = this.listenForKillUser.bind(this);
     this.listenForKillUser();
     this.updateMe = this.updateMe.bind(this);
+    this.updateMe("updateProfileMessage","sfdsdfsfddsf");
   }
 
   updateMe(key,value){
@@ -309,7 +329,7 @@ class App extends React.Component{
 	let page
 	if (this.state.currentPage=="room") page =  
 		<Room 
-      partner={this.props.data.partner} 
+      partner={"adsgdsaffdsa"} 
       goToLobby={this.goToLobby} 
     />;
 	if (this.state.currentPage=="lobby") page =  
