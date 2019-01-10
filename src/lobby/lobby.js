@@ -23,7 +23,6 @@ import './lobbyStyles.css';
 export class Lobby extends React.Component{
   constructor(props){
     super(props)
-    console.log(this.props)
   }
 
   render(){
@@ -31,7 +30,12 @@ export class Lobby extends React.Component{
         <div id={this.props.id}>
             <button onClick={this.props.goToRoom}>go to room</button><br></br>
             <Chat id="rightHalf" me={this.props.me} socket={this.props.socket} />
-            <UserList id="leftHalf" userList={this.props.userList} me={this.props.me} />
+            <UserList 
+              id = "leftHalf" 
+              userList = {this.props.userList} 
+              me = {this.props.me} 
+              updateMe = {this.props.updateMe}
+            />
         </div>)
   }
 }
@@ -96,18 +100,19 @@ class UserList extends React.Component{
   createList(){
     let list=[]
     Object.values(this.props.userList).forEach(user=>{
-      list.push(<UserInfo user={user}
-                          me={this.props.me} 
-                          key={user.id} 
-                          className="userListElement" 
-                          selectUser={this.selectUser} 
-                          currentUser={this.state.selectedUser}  />)
+      list.push(<UserInfo user = {user}
+                          me = {this.props.me} 
+                          key = {user.id} 
+                          className = "userListElement" 
+                          selectUser = {this.selectUser} 
+                          currentUser = {this.state.selectedUser}  
+                          updateMe = {this.props.updateMe}
+                />)
     })
     return list;
   }
 
   render(){
-     {console.log(this.props)}
      return (
       <div id={this.props.id}>
         {this.createList()}
@@ -118,8 +123,13 @@ class UserList extends React.Component{
 class UserInfo extends React.Component{
   constructor(props){
     super(props)
-    this.state={showDescription:false};
-    this.toggleDescription=this.toggleDescription.bind(this)
+    this.state = {
+      showDescription: false,
+      customDescriptionFormText: ""
+    };
+    this.toggleDescription = this.toggleDescription.bind(this);
+    this.submitCustomDescription = this.submitCustomDescription.bind(this);
+    this.handleCustomDescriptionFormText = this.handleCustomDescriptionFormText.bind(this);
   }
 
   renderProfilePic(){
@@ -142,6 +152,41 @@ class UserInfo extends React.Component{
                 {this.props.user.problem.description}
                </div>)
       }
+  }
+
+  renderCustomDescription(){
+    let isCurrentUser = this.props.me.id === this.props.user.id
+    let customDescription = this.props.user.customDescription || ""
+    
+    let submitCustomDescriptionForm =  
+      <form onSubmit={this.submitCustomDescription}>
+        <label>
+          My Description:
+          <input type="text" value={this.state.customDescriptionFormText} onChange={this.handleCustomDescriptionFormText} />
+        </label>
+        <input type="submit" value="Submit description"/>
+      </form>
+
+    return (
+      <div>
+        {isCurrentUser && (submitCustomDescriptionForm)}
+        <div className="customDescription">
+          {'User message: ' + customDescription}
+        </div>
+      </div>
+    )
+  }
+
+  handleCustomDescriptionFormText(event){
+    this.setState({customDescriptionFormText: event.target.value});
+  }
+
+  submitCustomDescription(event) {
+    event.preventDefault();
+    this.props.updateMe(
+      "updateCustomDescription",
+      this.state.customDescriptionFormText
+    );
   }
 
   renderProblemInfo(){
@@ -168,6 +213,7 @@ class UserInfo extends React.Component{
     else this.setState({showDescription:!this.state.showDescription})
   }
 
+
   render(){
      return (
         <div className={this.props.className}>
@@ -177,6 +223,7 @@ class UserInfo extends React.Component{
           <br></br>
           {this.renderProblemInfo()}
           <br className="belowImage"></br>
+          {this.renderCustomDescription()}
         </div>)
   }
 }

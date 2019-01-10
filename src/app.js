@@ -71,13 +71,6 @@ async function initializeApp() {
     data.socket.emit('clientToken',{id:data.initialMe.id, token: data.initialMe.webSocketToken});
   });
 
-  // chrome.tabs.sendMessage(
-  //   data.leetCodeTabId, 
-  //   {type: "appSendingContentScriptWebSocket", socket: data.socket}, 
-  //   function(response) {
-  //     return;
-  //   })
-
   renderApp(data);
   startHeartBeat();
 }
@@ -176,7 +169,6 @@ async function getAuthenticationCode() {
         type: "appWantsAuthenticationCode"
       },
       function(response) {
-        // console.log('received auth code: ' + JSON.stringify(response));
         chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
           let responseFunction = sendResponse;
           if(message.type == "backgroundSendingAppAuthenticationCode") {
@@ -215,8 +207,6 @@ async function requestGuestData(){
   return me;
 }
 
-
-
 async function postProblem(){
   return new Promise(function(resolve,reject){
     const request = new XMLHttpRequest();   // new HttpRequest instance 
@@ -241,15 +231,9 @@ async function requestUserList(){
 async function connectSocket(){
   return new Promise(function(res){
     let socket = io.connect(WEBSOCKET_URL);
-    console.log(socket)
     res(socket);
   })
 }
-
-
-// window.beforeunload = function() {
-//     alert("Are you sure you want to leave this page?");
-// }
 
 function renderApp() {
   ReactDOM.render(
@@ -262,7 +246,6 @@ function renderApp() {
 
 class App extends React.Component{
   constructor(props){
-    console.log(props)
     super(props)
     this.state={
       currentPage: "lobby",
@@ -333,7 +316,8 @@ class App extends React.Component{
       goToLobby={this.goToLobby} 
     />;
 	if (this.state.currentPage=="lobby") page =  
-		<Lobby 
+    <Lobby 
+      updateMe = {this.updateMe}
       socket={this.props.socket}
       userList={this.state.userList} 
       me={this.state.me} 

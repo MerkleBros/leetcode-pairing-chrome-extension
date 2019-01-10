@@ -76,12 +76,13 @@ app.get('/getRCData', function(req, res) {
       let baseUserData = {
         id: me.id,
         name: name,
-        hasPhoto:me.has_photo,
-        image:me.image,
-        hasLeetCodeProblem:false,
-        problem:undefined,
-        isPairingNow:false,
-        isPairingHost:false
+        hasPhoto: me.has_photo,
+        image: me.image,
+        hasLeetCodeProblem: false,
+        problem: undefined,
+        isPairingNow: false,
+        isPairingHost: false,
+        customDescription: undefined
       }
       let meData = Object.assign({token: token, webSocketToken: webSocketToken}, baseUserData)
       let userSession = Object.assign({client: client, heartBeats: 10}, meData);
@@ -107,7 +108,8 @@ app.get('/getGuestData', function(req, res) {
     hasLeetCodeProblem:false,
     problem:undefined,
     isPairingNow:false,
-    isPairingHost:false
+    isPairingHost:false,
+    customDescription: undefined
   }
   let webSocketToken = Math.round(Math.random()*1000000000)
   let meData = Object.assign({webSocketToken: webSocketToken}, baseUserData)
@@ -174,6 +176,9 @@ io.on('connection', function(socket){
       case "updateProfileMessage":
         serverUserList[message.id].profileMessage = message.value;
         break;
+      case "updateCustomDescription":
+        serverUserList[message.id].customDescription = message.value;
+        break;
       case "updateIsPairingNow":
         serverUserList[message.id].isPairingNow = message.value;
         break;
@@ -222,7 +227,8 @@ function createClientUser(user) {
     problem: user.problem,
     isPairingNow: user.isPairingNow,
     isPairingHost: user.isPairingHost,
-    partnerId: user.partnerId 
+    partnerId: user.partnerId,
+    customDescription: user.customDescription
   }
   return userObject;
 }
