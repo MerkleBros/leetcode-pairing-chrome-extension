@@ -20,7 +20,7 @@
   "content_scripts": [
     {
       "matches": ["https://leetcode.com/problems/*"],
-      "js": ["socket.io.js", "content.js"],
+      "js": ["simplepeer.min.js", "content.js"],
       "run_at": "document_end"
     },
     {
@@ -31,7 +31,7 @@
     }
   ],
   "web_accessible_resources": [
-    "main.js"  
+    "leetCodeReadWrite.js"  
   ],
   "permissions": ["<all_urls>","tabs", "activeTab", "declarativeContent"]
 

@@ -68,7 +68,23 @@ async function initializeApp() {
 
   data.socket.on('connect', function(msg) {
     console.log('socket connected')
-    data.socket.emit('clientToken',{id:data.initialMe.id, token: data.initialMe.webSocketToken});
+    data.socket.emit('clientToken',{'id':data.initialMe.id, 'token': data.initialMe.webSocketToken});
+
+    data.socket.on("guestSendsOfferToHostApp", function(offer){
+      console.log("guestSendsOfferToHostApp"+offer)
+      chrome.tabs.sendMessage(
+        data.leetCodeTabId, 
+        {'type': "appSendsContentOffer",'offer':offer}
+      );
+    })
+
+    chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+      
+      if (message.type=="contentSendsAppAnswer"){
+        console.log("contentSendsAppAnswer"+message.answer)
+        data.socket.emit('hostSendsAnswerToGuestApp',message.answer);
+      }
+    })
   });
 
   renderApp(data);
@@ -262,6 +278,66 @@ class App extends React.Component{
     this.listenForKillUser();
     this.updateMe = this.updateMe.bind(this);
     this.updateMe("updateProfileMessage","sfdsdfsfddsf");
+    this.sendPairingRequest = this.sendPairingRequest.bind(this);
+    this.listenForPairingRequest = this.listenForPairingRequest.bind(this);
+    this.listenForPairingRequest();
+    this.startPairing = this.startPairing.bind(this);
+    this.listenForCodeChange = this.listenForCodeChange.bind(this);
+    this.listenForCodeChange();
+  }  
+
+  sendPairingRequest(partnerId){
+    console.log("pairing request sent to "+partnerId)
+    this.props.socket.emit('requestPairWith',
+      {
+        partnerId: partnerId,
+        meId: this.state.me.id
+      });
+  }
+
+  listenForPairingRequest(){
+    this.props.socket.on('pairingConfirmed',
+      (function(msg) {
+        if (msg.host==this.state.me.id){
+          this.startPairing(msg.guest, 'host');
+        }
+        else{
+          this.startPairing(msg.host, 'guest');
+        }
+      }).bind(this));
+  }
+
+  listenForCodeChange(){
+    //if I am the host relay to content when guest edits code
+    this.props.socket.on('guestSendsCodeChange',
+      (function(msg){
+        chrome.tabs.sendMessage(data.leetCodeTabId, 
+        {type: "appSendingContentCodeChange", code: msg});
+      }).bind(this));
+    //if I am the host relay from content when I edit code
+    chrome.runtime.onMessage.addListener((function (message, sender, sendResponse) {
+      if (message.type == "contentSendingAppCodeChange"){
+        this.props.socket.emit("hostSendsCodeChange",{code:message.code})
+      }
+    }).bind(this));
+  }
+
+  startPairing(partnerId, myRole){
+    console.log("partner: " + partnerId +" myRole: " + myRole)
+    this.updateMe('updateIsPairingNow',true);
+    this.updateMe('updatePartnerId',partnerId);
+    this.updateMe('updatePartnerData',this.state.userList[partnerId]);
+
+    if (myRole=='guest'){
+      this.updateMe('updateIsPairingHost',false);
+      this.goToRoom();
+    }
+    if (myRole=='host'){
+      //send data to content script
+
+      //switch tab to leetcode
+      chrome.tabs.update(data.leetCodeTabId, { highlighted: true, active: true });
+    }
   }
 
   updateMe(key,value){
@@ -312,7 +388,8 @@ class App extends React.Component{
 	let page
 	if (this.state.currentPage=="room") page =  
 		<Room 
-      partner={"adsgdsaffdsa"} 
+      me={this.state.me}
+      socket={this.props.socket}       
       goToLobby={this.goToLobby} 
     />;
 	if (this.state.currentPage=="lobby") page =  
@@ -323,6 +400,7 @@ class App extends React.Component{
       me={this.state.me} 
       goToRoom={this.goToRoom}
       id="lobby"
+      sendPairingRequest={this.sendPairingRequest}
     />;
 
 	return (

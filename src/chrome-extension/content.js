@@ -1,19 +1,10 @@
-const WEBSOCKET_URL='http://localhost:5000/';
-
 console.log('content started')
 
-function connectSocket(){
-    socket = io.connect(WEBSOCKET_URL);
-    socket.on('connect', function(msg) {
-      console.log("socket connected")
-    });
-}
-
-connectSocket();
-
-let codeMirrorValue='';
+//const WEBSOCKET_URL='http://localhost:5000/';
+//connectSocket();
 
 const data = {
+  offer:undefined,
   problem:undefined,
   partner: {
     name: 'Hello Kitty',
@@ -27,6 +18,12 @@ chrome.runtime.onMessage.addListener(async function (message, sender, sendRespon
   if (message.type == "appWantsProblemData"){
     sendResponse(data.problem); 
   }
+    
+  navigator.getUserMedia({ video: true, audio: true }, gotMedia, function (e) {});
+
+  if (message.type == "appSendsContentOffer"){
+    p.signal(message.offer)
+  }
 
   if (message.type == "promptContentScriptToGetProblemData"){
     data.problem = await getProblemData();
@@ -37,6 +34,12 @@ chrome.runtime.onMessage.addListener(async function (message, sender, sendRespon
       chrome.runtime.sendMessage({type: "contentScriptDoesNotHaveProblemData"});
     }
   }
+
+  if (message.type == "appSendingContentCodeChange"){
+    talkingDiv.setAttribute("contentrequest", "codeChange");
+    talkingDiv.setAttribute("contentmessage", message.code);
+  }
+
 
 });
 
@@ -57,8 +60,7 @@ function getProblemData() {
         language: document.querySelector("#lang-select > div > div > div.ant-select-selection-selected-value").innerText
       }
 
-      //setCodeMirrorObserver();
-      startMainScript();
+      startLeetCodeObserverScript();
 
       clearInterval(getProblemDataLoop)
       resolve(problem)
@@ -67,9 +69,7 @@ function getProblemData() {
   });
 }
 
-
-
-let notesBox=addNotesBox();
+//let notesBox=addNotesBox();
 
 function addNotesBox(){
   let textArea = document.createElement('textarea');
@@ -81,33 +81,67 @@ function addNotesBox(){
   return textArea;
 }
 
-function setCodeMirrorObserver(){
-  let mirrorObject = document.getElementsByClassName('CodeMirror')[0].CodeMirror
-  let targetNode = document.getElementsByClassName('CodeMirror')[0];
-  console.log(targetNode)
-  var observerOptions = {
-    childList: true,
-    attributes: true,
-    subtree: true //Omit or set to false to observe only changes to the parent node.
-  }
+let talkingDiv = document.createElement('div');
 
-  var observer = new MutationObserver(function(){
-    let newValue= mirrorObject.getValue()
-    console.log(newValue)
-    if (newValue != codeMirrorValue){
-      //send new value to partner
-      codeMirrorValue = newValue;
-      console.log(codeMirrorValue)
-    }
-  });
+function startLeetCodeObserverScript(){
 
-  observer.observe(targetNode, observerOptions);
-}
+  talkingDiv.setAttribute("id","talkingDiv");
+  talkingDiv.setAttribute("contentrequest", "");
+  talkingDiv.setAttribute("contentmessage", "");
+  talkingDiv.setAttribute("leetcoderequest", "");
+  talkingDiv.setAttribute("leetcodemessage", "");
+  document.body.appendChild(talkingDiv);
 
-function startMainScript(){
-  const script = document.createElement('script');
+  let script = document.createElement('script');
   script.setAttribute("type", "module");
-  script.setAttribute("src", chrome.runtime.getURL('main.js'));
+  script.setAttribute("src", chrome.runtime.getURL('leetCodeReadWrite.js'));
   const head = document.head || document.getElementsByTagName("head")[0] || document.documentElement;
   head.insertBefore(script, head.lastChild);
+
+
+  //listen to div
+  var observerOptions = {attributes: true}
+
+  var observer = new MutationObserver(function(){
+      if (talkingDiv.getAttribute('leetcoderequest')=="codeChange"){
+        talkingDiv.setAttribute('leetcoderequest', '');
+        chrome.runtime.sendMessage({
+          type: "contentSendingAppCodeChange",
+          code: talkingDiv.getAttribute('leetcodemessage')
+        });
+      }
+  });
+
+  observer.observe(talkingDiv, observerOptions);
+}
+
+
+var p
+function gotMedia (stream) {
+  
+  p = new SimplePeer({ initiator: false, stream: stream })
+
+  p.on('error', function (err) { console.log('error', err) })
+
+  p.on('signal', function (answer) {
+    chrome.runtime.sendMessage({"type":"contentSendsAppAnswer","answer":answer})
+  })
+
+  //p.signal(data.offer)
+  
+  p.on('connect', function () {
+    p.send('whatever' + Math.random())
+  })
+
+  p.on('stream', function (stream) {
+    // got remote video stream, now let's show it in a video tag
+    // let audioChat = document.createElement('audio');
+    // audioChat.src = window.URL.createObjectURL(stream)
+    // audioChat.play()
+  //video
+    var video = document.createElement('video');
+    video.srcObject = stream
+    document.body.appendChild(video);
+    video.play()
+  })
 }

@@ -35,6 +35,7 @@ export class Lobby extends React.Component{
               userList = {this.props.userList} 
               me = {this.props.me} 
               updateMe = {this.props.updateMe}
+              sendPairingRequest={this.props.sendPairingRequest}
             />
         </div>)
   }
@@ -107,6 +108,7 @@ class UserList extends React.Component{
                           selectUser = {this.selectUser} 
                           currentUser = {this.state.selectedUser}  
                           updateMe = {this.props.updateMe}
+                          sendPairingRequest={this.props.sendPairingRequest} />)
                 />)
     })
     return list;
@@ -139,9 +141,12 @@ class UserInfo extends React.Component{
   }
 
   renderPairingButton(){
-    if (this.props.me.id!=this.props.user.id && 
+    if (this.props.me.id!=this.props.user.id && this.props.user.isPairingNow==false &&
       (this.props.me.hasLeetCodeProblem || this.props.user.hasLeetCodeProblem)){
-      return <button>Pair With Me</button>
+      return <button onClick={()=>{this.props.sendPairingRequest(this.props.user.id)}} >Pair With Me</button>
+    }
+    if (this.props.user.isPairingNow==true){
+      return <div>I am currently pairing.</div>
     }
   }
 

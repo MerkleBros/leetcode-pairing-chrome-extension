@@ -82,7 +82,9 @@ app.get('/getRCData', function(req, res) {
         problem: undefined,
         isPairingNow: false,
         isPairingHost: false,
-        customDescription: undefined
+        customDescription: undefined,
+        partnerId: undefined,
+        partnerData: undefined
       }
       let meData = Object.assign({token: token, webSocketToken: webSocketToken}, baseUserData)
       let userSession = Object.assign({client: client, heartBeats: 10}, meData);
@@ -109,7 +111,9 @@ app.get('/getGuestData', function(req, res) {
     problem:undefined,
     isPairingNow:false,
     isPairingHost:false,
-    customDescription: undefined
+    customDescription: undefined,
+    partnerId:undefined,
+    partnerData:undefined
   }
   let webSocketToken = Math.round(Math.random()*1000000000)
   let meData = Object.assign({webSocketToken: webSocketToken}, baseUserData)
@@ -150,17 +154,56 @@ io.on('connection', function(socket){
   socket.on('clientToken', function(msg){
     console.log("checking client socket token")
 
-    if (serverUserList[msg.id].webSocketToken == msg.token){
-      console.log("got client socket token")
-      serverUserList[msg.id].socket = socket;
-    }
-    else{
-      socket.disconnect(true);
-    }
+    // if (serverUserList[msg.id].webSocketToken == msg.token){
+    //   console.log("got client socket token")
+    console.log(msg)
+    serverUserList[msg.id].socket = socket;
+    // }
+    // else{
+    //   socket.disconnect(true);
+    // }
   })
 
   socket.on('lobbyChatMessage', function (msg) {
     io.emit('lobbyChatMessage', msg);
+  });
+
+  socket.on('requestPairWith', function(msg) {
+
+    let requester = serverUserList[msg.meId];
+    let target = serverUserList[msg.partnerId];
+    let host,guest;
+
+    if(target.hasLeetCodeProblem || requester.hasLeetCodeProblem) {
+
+      host = target.hasLeetCodeProblem ? target : requester
+      guest = target.hasLeetCodeProblem ? requester : target
+      let roomName = 'room-' + msg.partnerId + msg.meId
+      socket.join(roomName);
+      target.socket.join(roomName);
+
+      io.to(roomName).emit('pairingConfirmed', {'host':host.id, 'guest': guest.id});
+
+      host.socket.on('hostSendsCodeChange',function(msg){
+        host.socket.to(roomName).emit('hostSendsCodeChange', msg.code);
+      })
+      guest.socket.on('guestSendsCodeChange',function(msg){
+        guest.socket.to(roomName).emit('guestSendsCodeChange', msg.code);
+      })
+      
+      //webRTC
+      guest.socket.on('guestSendsOfferToHostApp',function(offer){
+        guest.socket.to(roomName).emit('guestSendsOfferToHostApp', offer);
+      })
+      host.socket.on('hostSendsAnswerToGuestApp',function(answer){
+        host.socket.to(roomName).emit('hostSendsAnswerToGuestApp', answer);
+      })
+
+
+    }
+    else {
+      socket.emit('Pairing Error: Neither partner has a leetcode problem.');
+    }
   });
 
   socket.on('updateUser', function (message) {
@@ -188,6 +231,9 @@ io.on('connection', function(socket){
       case "updateIsPairingHost":
         serverUserList[message.id].isPairingHost = message.value;
         break;
+      case "updatePartnerData":
+        serverUserList[message.id].partnerData = message.value;
+        break;      
     }
     console.log('updateUser')
     socket.emit('updateMe',createMeUser(serverUserList[message.id]));
@@ -204,7 +250,12 @@ io.on('connection', function(socket){
 
 function createMeUser(user){
   let me = createClientUser(user)
-  return Object.assign({token: user.token}, me)
+  return Object.assign(
+   {token: user.token,    
+    isPairingHost:user.isPairingHost,
+    partnerId:user.partnerId,
+    partnerData:user.partnerData
+  }, me)
 }
 
 
