@@ -1,8 +1,3 @@
-#bar{
-  background-color: green;
-  color:red;  
-}
-
 #leftHalf{
 	border: 1px solid grey;
 	width:45%;
@@ -12,4 +7,15 @@
 #rightHalf{
 	width: 45%;
 	float: right;
+	background-color: #F5DEB3;
+	margin: 5px;
+	padding: 5px;
+	border: 1px solid black;
+	border-radius: 3px;
+	font-size: 140%
+}
+
+video{
+	width: 40%;
+	margin: 0 25%;
 }

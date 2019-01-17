@@ -46,3 +46,7 @@ textarea {
 .preserveFormatting{
 	white-space: pre-wrap;
 }
+
+.inline{
+	display: inline;
+}

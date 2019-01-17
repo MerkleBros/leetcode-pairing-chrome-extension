@@ -284,6 +284,7 @@ class App extends React.Component{
     this.startPairing = this.startPairing.bind(this);
     this.listenForCodeChange = this.listenForCodeChange.bind(this);
     this.listenForCodeChange();
+    this.killPartner = this.killPartner.bind(this);
   }  
 
   sendPairingRequest(partnerId){
@@ -319,6 +320,12 @@ class App extends React.Component{
       if (message.type == "contentSendingAppCodeChange"){
         this.props.socket.emit("hostSendsCodeChange",{code:message.code})
       }
+
+      if (message.type == "leetCodeTabClosed" && this.state.me.isPairingHost){
+        alert("You closed LeetCode. Logging out now.")
+        window.close();
+      }      
+
     }).bind(this));
   }
 
@@ -333,8 +340,9 @@ class App extends React.Component{
       this.goToRoom();
     }
     if (myRole=='host'){
+      this.updateMe('updateIsPairingHost',true);
       //send data to content script
-
+console.log("start pairing me:"+JSON.stringify(this.state.me))
       //switch tab to leetcode
       chrome.tabs.update(data.leetCodeTabId, { highlighted: true, active: true });
     }
@@ -342,19 +350,18 @@ class App extends React.Component{
 
   updateMe(key,value){
     let message = {
-      id: this.state.me.id,
-      flag: key,
-      value: value
+      'id': this.state.me.id,
+      'flag': key,
+      'value': value
     }
     this.props.socket.emit('updateUser', message);
   }
 
   listenForUpdateMe(){
     this.props.socket.on('updateMe',(function(user) {
-      console.log("updating "+user.id)
-      this.setState({
-        me: user
-      });
+      console.log("updating me")
+      this.setState({'me': user});
+      console.log(this.state.me)
     }).bind(this));
   }
 
@@ -369,12 +376,34 @@ class App extends React.Component{
 
   listenForKillUser(){
     this.props.socket.on('killUser',(function(id) {
+      if (id==this.state.me.partnerId) this.killPartner();
       console.log("killing "+id)
       let updatedUserList = this.state.userList;
       delete updatedUserList[id];
       this.setState({userList: updatedUserList});
     }).bind(this));
   }
+
+  //should be called if host leetcode window is closed
+  killPartner(){
+    console.log(this.state.me)
+    if (this.state.me.isPairingHost){
+      //send message to content, content displays alert
+      chrome.tabs.sendMessage(
+      data.leetCodeTabId, 
+      {type: "partnerKilled"}
+      );
+    }
+    else{
+      alert("Partner Disconnected.");
+      this.goToLobby();
+    }
+    this.updateMe('updateIsPairingNow',false);
+    this.updateMe('updatePartnerId',undefined);
+    this.updateMe('updatePartnerData',undefined);
+    this.updateMe('updateIsPairingHost',false);
+  }
+
 
   goToRoom(){
   	this.setState({currentPage:"room" })
@@ -383,30 +412,44 @@ class App extends React.Component{
   	this.setState({currentPage:"lobby" })
   }
 
+  page(){
+    let page
+    if (this.state.currentPage=="room"){ 
+          console.log('userlist'+JSON.stringify(this.state.userList))
+          console.log('me'+JSON.stringify(this.state.me))
+          console.log('partner id'+this.state.me.partnerId)
+     //     console.log('partner id'+this.state.me.partnerId)
+     // let partnerEyeDee=
+          //console.log(this.state.me.partnerData)
+      page =  
+      <Room 
+        me={this.state.me}
+        socket={this.props.socket}       
+        goToLobby={this.goToLobby} 
+        result={this.state.result}
+        input={this.state.input}
+        output={this.state.output}
+        expected={this.state.expected}
+      />;
+    }
+    if (this.state.currentPage=="lobby") page =  
+      <Lobby 
+        updateMe = {this.updateMe}
+        socket={this.props.socket}
+        userList={this.state.userList} 
+        me={this.state.me} 
+        goToRoom={this.goToRoom}
+        id="lobby"
+        sendPairingRequest={this.sendPairingRequest}
+      />;
+      return page;
+  }
+
   render(){
-
-	let page
-	if (this.state.currentPage=="room") page =  
-		<Room 
-      me={this.state.me}
-      socket={this.props.socket}       
-      goToLobby={this.goToLobby} 
-    />;
-	if (this.state.currentPage=="lobby") page =  
-    <Lobby 
-      updateMe = {this.updateMe}
-      socket={this.props.socket}
-      userList={this.state.userList} 
-      me={this.state.me} 
-      goToRoom={this.goToRoom}
-      id="lobby"
-      sendPairingRequest={this.sendPairingRequest}
-    />;
-
 	return (
 		<div id={this.props.id}>
 			Leetcode Pairing
-			{page}
+			{this.page()}
 		</div>
 	)
   }

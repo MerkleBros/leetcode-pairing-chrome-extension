@@ -1,5 +1,7 @@
 console.log('content started')
 
+var p
+navigator.getUserMedia({ video: true, audio: true }, gotMedia, function (e) {});
 //const WEBSOCKET_URL='http://localhost:5000/';
 //connectSocket();
 
@@ -19,9 +21,9 @@ chrome.runtime.onMessage.addListener(async function (message, sender, sendRespon
     sendResponse(data.problem); 
   }
     
-  navigator.getUserMedia({ video: true, audio: true }, gotMedia, function (e) {});
 
   if (message.type == "appSendsContentOffer"){
+    talkingDiv.setAttribute('contentrequest','requestInitialCode');
     p.signal(message.offer)
   }
 
@@ -39,7 +41,12 @@ chrome.runtime.onMessage.addListener(async function (message, sender, sendRespon
     talkingDiv.setAttribute("contentrequest", "codeChange");
     talkingDiv.setAttribute("contentmessage", message.code);
   }
-
+  
+  if (message.type == "partnerKilled"){
+    p.destroy();
+    navigator.getUserMedia({ video: true, audio: true }, gotMedia, function (e) {});
+    alert("Partner Disconnected.")
+  }
 
 });
 
@@ -116,7 +123,6 @@ function startLeetCodeObserverScript(){
 }
 
 
-var p
 function gotMedia (stream) {
   
   p = new SimplePeer({ initiator: false, stream: stream })
@@ -127,21 +133,21 @@ function gotMedia (stream) {
     chrome.runtime.sendMessage({"type":"contentSendsAppAnswer","answer":answer})
   })
 
-  //p.signal(data.offer)
-  
-  p.on('connect', function () {
-    p.send('whatever' + Math.random())
-  })
-
   p.on('stream', function (stream) {
-    // got remote video stream, now let's show it in a video tag
-    // let audioChat = document.createElement('audio');
-    // audioChat.src = window.URL.createObjectURL(stream)
-    // audioChat.play()
-  //video
+    //video
     var video = document.createElement('video');
+    video.style.width = "120px";
+    video.style.height = "120px";
+    video.style.position = "fixed";
+    video.style.top = "0";
+
     video.srcObject = stream
     document.body.appendChild(video);
     video.play()
   })
 }
+
+window.onunload = function () {
+  p.destroy()
+  chrome.runtime.sendMessage({type: "leetCodeTabClosed"});
+};

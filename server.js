@@ -178,7 +178,7 @@ io.on('connection', function(socket){
 
       host = target.hasLeetCodeProblem ? target : requester
       guest = target.hasLeetCodeProblem ? requester : target
-      let roomName = 'room-' + msg.partnerId + msg.meId
+      let roomName = 'room-' + host.id + guest.id
       socket.join(roomName);
       target.socket.join(roomName);
 
@@ -198,7 +198,15 @@ io.on('connection', function(socket){
       host.socket.on('hostSendsAnswerToGuestApp',function(answer){
         host.socket.to(roomName).emit('hostSendsAnswerToGuestApp', answer);
       })
-
+      //partner killed
+      guest.socket.on('partnerKilled',function(){
+        console.log('partner killed')
+        guest.socket.emit('partnerKilled',{})
+      })
+      host.socket.on('partnerKilled',function(){
+        console.log('partner killed')
+        host.socket.emit('partnerKilled',{})
+      })
 
     }
     else {
@@ -306,7 +314,16 @@ function startHeartBeat(){
 }
 
 function killUser(id){
-  console.log("killing "+id)
+  if (serverUserList[id].isPairingNow){
+    let roomName
+    if (serverUserList[id].isPairingHost) {
+      roomName = 'room-' + id + serverUserList[id].partnerId
+    }
+    else {
+      roomName = 'room-' + serverUserList[id].partnerId +id
+    }
+    serverUserList[id].socket.to(roomName).emit('partnerKilled', {});    
+  }
   delete serverUserList[id];
   io.emit('killUser', id);
 }

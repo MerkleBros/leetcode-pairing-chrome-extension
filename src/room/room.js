@@ -8,7 +8,8 @@ import 'codemirror/theme/material.css';
 require('codemirror/mode/xml/xml');
 require('codemirror/mode/javascript/javascript');
 
-var Peer = require('simple-peer')
+let Peer = require('simple-peer')
+let peer,mediaStream
 
 let codeMirrorOptions={   
   mode: 'xml',
@@ -19,6 +20,8 @@ let codeMirrorOptions={
 export class Room extends React.Component {
   constructor(props){
     super(props)
+              console.log('room props', this.props)
+
     this.state = {
       codeValue:"", 
       cursorPosition:{ch: 0,line: 0,sticky: null}
@@ -29,37 +32,49 @@ export class Room extends React.Component {
     //send message to host requesting initial leetcode code
     //initiate webRTC - get video/voice stream
     this.gotMedia = this.gotMedia.bind(this);
-    navigator.getUserMedia({ video: true, audio: true }, this.gotMedia, function () {})
+  }
+  componentDidMount(){
+    navigator.getUserMedia({ video: true, audio: true }, this.gotMedia,
+      function(medias){
+        mediaStream = medias.getTracks()
+      })
+    // .then(medias => {
+    //   mediaStream = medias.getTracks()
+    // })
+  }
+  componentWillUnmount(){
+    console.log("will unmount")
+    console.log(RTCPeerConnection.signalingState)
+    peer.destroy();
+    // peer = undefined;
+    // mediaStream.forEach(track => track.stop())
   }
 
   gotMedia (stream) {
-    var peer = new Peer({ initiator: true, stream: stream })
+    peer = new Peer({ initiator: true, stream: stream })
+    console.log(peer)
     peer.on('signal', (function (offer) {
       //send offer to other peer through websocket
+      console.log('sent offer')
       this.props.socket.emit("guestSendsOfferToHostApp",offer);
     }).bind(this))
 
     this.props.socket.on('hostSendsAnswerToGuestApp',function(answer){
+      console.log('got answer')
+      console.log(answer)
+      // peer._pc.signalingState="have-local-offer"
       peer.signal(answer);
     })
 
-
     peer.on('stream', (function (stream) {
-      // let audioChat = document.createElement('audio');
-      // audioChat.src = window.URL.createObjectURL(stream)
-      // audioChat.play()
-      // got remote video stream, now let's show it in a video tag
-      var video = document.createElement('video');
-      video.srcObject = stream
-      document.body.appendChild(video);
-      video.play()
+      this.refs.vidRef.srcObject = stream;
+      this.refs.vidRef.play();
     }).bind(this))
   }
 
   listenForCodeChange(){
     this.props.socket.on('hostSendsCodeChange', (function(msg){
       if (this.state.codeValue!=msg && this.state.lastReceivedCode != msg) {
-        //debugger;
         console.log('partner typed something')
         console.log('partner msg'+msg)
         console.log('my code value'+this.state.codeValue)
@@ -70,10 +85,8 @@ export class Room extends React.Component {
     }).bind(this));
   }
 
-// /partner={this.props.me.partnerData.name}
   render(){
     return (<React.Fragment>
-      <StatusBar  id="bar" partner={'asfsafa'} />
       <button onClick={this.props.goToLobby}>back to lobby</button><br></br>
       <div id="leftHalf">
       <CodeMirror
@@ -98,42 +111,35 @@ export class Room extends React.Component {
       }
       />
       </div>
-      <Chat id="rightHalf" />
+      <div id="rightHalf">
+        <video ref="vidRef"></video>
+
+      </div>
   </React.Fragment>)
   }
 }
+        // <StatusBar me={this.props.me}
+        //            result={this.props.result}
+        //            input={this.props.input}
+        //            output={this.props.output}
+        //            expected={this.props.expected}
+        // />
 
+// class StatusBar extends React.Component{
+//   constructor(props){
+//     super(props)
+//   }
 
-class StatusBar extends React.Component{
-  constructor(props){
-    super(props)
-    this.state={partnerConnected:false, partnerAction:"idle" }
-  }
+//   render(){
 
-  render(){
-     return (
-        <div id={this.props.id}>
-            <img src={"https://media.nbcchicago.com/images/652*489/092310MarkZuckerberg01.jpg"} ></img>
-            You are pairing with: {this.props.partner} <span>&nbsp;</span>
-            Partner Status:   {this.state.partnerConnected ? "connected" : "disconnected"} <span>&nbsp;</span>
-            Partner is: {this.state.partnerAction}
-        </div>)
-  }
-}
-
-class Chat extends React.Component{
-  constructor(props){
-    super(props)
-  }
-
-  render(){
-     return (<div id={this.props.id}>
-          <textarea rows="20" cols="50">
-          </textarea>
-          <form action="#">
-            <input type="text" name="message" id="chatInput"></input>
-            <input type="submit" value="Submit"></input>
-          </form>
-        </div>)
-  }
-}
+//      return (
+//         <div>
+//         {this.props.me.partnerData ? this.props.me.partnerData.image : null}
+//         You Are Pairing With: {this.props.me.partnerData}<br></br><br></br>
+//         Result: {this.props.result}<br></br><br></br>
+//         Input: {this.props.input}<br></br><br></br>
+//         Output: {this.props.output}<br></br><br></br>
+//         Expected: {this.props.expected}
+//         </div>)
+//   }
+// }

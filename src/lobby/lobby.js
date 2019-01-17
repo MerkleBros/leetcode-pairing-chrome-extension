@@ -108,7 +108,7 @@ class UserList extends React.Component{
                           selectUser = {this.selectUser} 
                           currentUser = {this.state.selectedUser}  
                           updateMe = {this.props.updateMe}
-                          sendPairingRequest={this.props.sendPairingRequest} />)
+                          sendPairingRequest={this.props.sendPairingRequest}
                 />)
     })
     return list;
@@ -125,10 +125,18 @@ class UserList extends React.Component{
 class UserInfo extends React.Component{
   constructor(props){
     super(props)
-    this.state = {
-      showDescription: false,
-      customDescriptionFormText: ""
-    };
+    if (this.props.me.id==this.props.user.id){
+      this.state = {
+        showDescription: false,
+        customDescriptionFormText: "",
+        doneEditingCustomText: false
+      };
+    }
+    else
+      this.state = {
+        showDescription: false,
+        customDescriptionFormText: ""
+      };
     this.toggleDescription = this.toggleDescription.bind(this);
     this.submitCustomDescription = this.submitCustomDescription.bind(this);
     this.handleCustomDescriptionFormText = this.handleCustomDescriptionFormText.bind(this);
@@ -163,21 +171,30 @@ class UserInfo extends React.Component{
     let isCurrentUser = this.props.me.id === this.props.user.id
     let customDescription = this.props.user.customDescription || ""
     
+    let submitCustomDescriptionButtonStyle =
+      this.state.doneEditingCustomText ? "inline" : null
+
+    let submitCustomDescriptionButtonText =
+      this.state.doneEditingCustomText ? "Edit message" : "Submit"
+
+    let submitCustomDescriptionBox =
+    this.state.doneEditingCustomText==false ?  
+      <label>
+        Enter Custom Message:
+        <input type="text" value={this.state.customDescriptionFormText} onChange={this.handleCustomDescriptionFormText} />
+      </label>
+    : <span>{'User message: ' + customDescription}</span>
+
     let submitCustomDescriptionForm =  
-      <form onSubmit={this.submitCustomDescription}>
-        <label>
-          My Description:
-          <input type="text" value={this.state.customDescriptionFormText} onChange={this.handleCustomDescriptionFormText} />
-        </label>
-        <input type="submit" value="Submit description"/>
+      <form onSubmit={this.submitCustomDescription} className={submitCustomDescriptionButtonStyle}>
+        {submitCustomDescriptionBox}
+        <input type="submit" value={submitCustomDescriptionButtonText}/>
       </form>
 
     return (
       <div>
-        {isCurrentUser && (submitCustomDescriptionForm)}
-        <div className="customDescription">
-          {'User message: ' + customDescription}
-        </div>
+        {isCurrentUser ? submitCustomDescriptionForm : 
+          ( this.props.user.customDescription ?('User message: ' + this.props.user.customDescription):null)}
       </div>
     )
   }
@@ -188,10 +205,12 @@ class UserInfo extends React.Component{
 
   submitCustomDescription(event) {
     event.preventDefault();
+    console.log("submitCustomDescription"+JSON.stringify(this.props.user))
     this.props.updateMe(
       "updateCustomDescription",
       this.state.customDescriptionFormText
     );
+    this.setState({doneEditingCustomText:!this.state.doneEditingCustomText});
   }
 
   renderProblemInfo(){

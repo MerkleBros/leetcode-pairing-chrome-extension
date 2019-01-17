@@ -5,21 +5,35 @@
 		<title>Leetcode Pairing</title>
 		<style>
 			body{
-				width:200px
+				width:200px;
+				border-radius: 3px
 			}
+			button{
+				width: 100%
+			}
+			div{
+				margin: 2px;
+			}
+			#button{
+				display: inline-block;
+				margin: 0 0 2px 0;
+			}
+
 		</style>
 	</head>
 
 	<body>
 		<div id="refreshMessage"></div>
 		<div>
-			<input type="radio" id="guest" 
-			name="loginType" value="guest" checked>
-  			<label for="guest">Guest</label>
-			<input type="radio" id="RC" 
-			name="loginType" value="RC">
-  			<label for="RC">RC</label>
-
+			<div>
+				<span id="button">Login Type: </span>
+				<input type="radio" id="guest" 
+				name="loginType" value="guest" checked>
+	  			<label for="guest">Guest</label>
+				<input type="radio" id="RC" 
+				name="loginType" value="RC">
+	  			<label for="RC">RC</label>
+			</div>
 			<button id="pair-on-mine">Pair on my LeetCode Problem</button>
 			<button id="pair-on-others">Help others with LeetCode Problem</button>
 		</div>

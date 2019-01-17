@@ -28,6 +28,13 @@ function setTalkingDivObserver(){
       //debugger;
       mirrorObject.setValue(codeMirrorValue)
     }
+    if (talkingDiv.getAttribute('contentrequest')=="requestInitialCode"){
+      talkingDiv.setAttribute('contentrequest','');
+      talkingDiv.setAttribute("leetcoderequest", "codeChange");
+      talkingDiv.setAttribute("leetcodemessage", mirrorObject.getValue());
+    }
+
+
   });
 
   observer.observe(talkingDiv, observerOptions);
