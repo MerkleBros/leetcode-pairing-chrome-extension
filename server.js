@@ -243,7 +243,7 @@ io.on('connection', function(socket){
         serverUserList[message.id].partnerData = message.value;
         break;      
     }
-    console.log('updateUser')
+    //console.log('updateUser',JSON.stringify(serverUserList[message.id]))
     socket.emit('updateMe',createMeUser(serverUserList[message.id]));
     io.emit('updateUser', createClientUser(serverUserList[message.id]));
   });
@@ -258,6 +258,10 @@ io.on('connection', function(socket){
 
 function createMeUser(user){
   let me = createClientUser(user)
+  console.log('me user',JSON.stringify(me) )
+  console.log('token', JSON.stringify(user.token))
+  console.log('partnerId',JSON.stringify(user.partnerId) )
+  console.log('partnerData', JSON.stringify(user.partnerData))
   return Object.assign(
    {token: user.token,    
     isPairingHost:user.isPairingHost,

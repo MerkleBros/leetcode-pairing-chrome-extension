@@ -331,22 +331,29 @@ class App extends React.Component{
 
   startPairing(partnerId, myRole){
     console.log("partner: " + partnerId +" myRole: " + myRole)
-    this.updateMe('updateIsPairingNow',true);
     this.updateMe('updatePartnerId',partnerId);
     this.updateMe('updatePartnerData',this.state.userList[partnerId]);
+    this.updateMe('updateIsPairingNow',true);
 
     if (myRole=='guest'){
       this.updateMe('updateIsPairingHost',false);
-      this.goToRoom();
+      //this.goToRoom();
     }
     if (myRole=='host'){
       this.updateMe('updateIsPairingHost',true);
       //send data to content script
-console.log("start pairing me:"+JSON.stringify(this.state.me))
+      console.log("start pairing me:"+JSON.stringify(this.state.me))
       //switch tab to leetcode
       chrome.tabs.update(data.leetCodeTabId, { highlighted: true, active: true });
     }
   }
+
+  componentDidUpdate(prevProps, prevState){
+    if (this.state.me.isPairingHost==false &&
+      (prevState.me.isPairingNow==false && this.state.me.isPairingNow==true))
+      this.goToRoom();
+  }
+
 
   updateMe(key,value){
     let message = {
@@ -421,6 +428,7 @@ console.log("start pairing me:"+JSON.stringify(this.state.me))
      //     console.log('partner id'+this.state.me.partnerId)
      // let partnerEyeDee=
           //console.log(this.state.me.partnerData)
+      console.log("creating new room")
       page =  
       <Room 
         me={this.state.me}

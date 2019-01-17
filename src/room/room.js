@@ -32,6 +32,8 @@ export class Room extends React.Component {
     //send message to host requesting initial leetcode code
     //initiate webRTC - get video/voice stream
     this.gotMedia = this.gotMedia.bind(this);
+    //TODO: remove event listers from sockets before unmount
+    this.killed = false;
   }
   componentDidMount(){
     navigator.getUserMedia({ video: true, audio: true }, this.gotMedia,
@@ -43,7 +45,8 @@ export class Room extends React.Component {
     // })
   }
   componentWillUnmount(){
-    console.log("will unmount")
+    this.killed = true;
+    console.log("will unmount ID " + this.randomId);
     console.log(RTCPeerConnection.signalingState)
     peer.destroy();
     // peer = undefined;
@@ -60,11 +63,16 @@ export class Room extends React.Component {
     }).bind(this))
 
     this.props.socket.on('hostSendsAnswerToGuestApp',function(answer){
+      if (this.killed) {
+        return;
+      }
       console.log('got answer')
       console.log(answer)
       // peer._pc.signalingState="have-local-offer"
+      console.log(peer);
+      console.log('peer signal ID = ' + this.randomId);
       peer.signal(answer);
-    })
+    }.bind(this));
 
     peer.on('stream', (function (stream) {
       this.refs.vidRef.srcObject = stream;
@@ -113,11 +121,13 @@ export class Room extends React.Component {
       </div>
       <div id="rightHalf">
         <video ref="vidRef"></video>
-
+        <StatusBar me={this.props.me} />
       </div>
   </React.Fragment>)
   }
 }
+        // <StatusBar me={this.props.me} />
+
         // <StatusBar me={this.props.me}
         //            result={this.props.result}
         //            input={this.props.input}
@@ -125,21 +135,28 @@ export class Room extends React.Component {
         //            expected={this.props.expected}
         // />
 
-// class StatusBar extends React.Component{
-//   constructor(props){
-//     super(props)
-//   }
+class StatusBar extends React.Component{
+  constructor(props){
+    super(props)
+  }
 
-//   render(){
+  partnerData(){
+    if (this.props.me.isPairingNow){
+      return <div>{this.props.me.partnerData.image}
+        You Are Pairing With: {this.props.me.partnerData.name}</div>
+    }
+  }
 
-//      return (
-//         <div>
-//         {this.props.me.partnerData ? this.props.me.partnerData.image : null}
-//         You Are Pairing With: {this.props.me.partnerData}<br></br><br></br>
-//         Result: {this.props.result}<br></br><br></br>
-//         Input: {this.props.input}<br></br><br></br>
-//         Output: {this.props.output}<br></br><br></br>
-//         Expected: {this.props.expected}
-//         </div>)
-//   }
-// }
+  render(){
+     return (
+        <div>
+        {this.partnerData()}
+        <br></br><br></br>
+
+        </div>)
+  }
+}
+  // Result: {this.props.result}<br></br><br></br>
+  // Input: {this.props.input}<br></br><br></br>
+  // Output: {this.props.output}<br></br><br></br>
+  // Expected: {this.props.expected}
