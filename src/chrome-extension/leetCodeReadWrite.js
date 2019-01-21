@@ -8,7 +8,6 @@ function setCodeMirrorObserver(){
   mirrorObject.on('change', () => {
     let newValue= mirrorObject.getValue();
     if (newValue!=codeMirrorValue){
-      console.log('I typed something')
       codeMirrorValue=newValue
       talkingDiv.setAttribute("leetcoderequest", "codeChange");
       talkingDiv.setAttribute("leetcodemessage", newValue);
@@ -22,7 +21,6 @@ function setTalkingDivObserver(){
   //update code mirror if I get a message from content
     if ((talkingDiv.getAttribute('contentrequest')=="codeChange")
     &&(codeMirrorValue!=talkingDiv.getAttribute('contentmessage'))){
-      console.log('partner typed something')
       talkingDiv.setAttribute('contentrequest','');
       codeMirrorValue=talkingDiv.getAttribute('contentmessage');
       //debugger;

@@ -40,8 +40,6 @@ async function initializeApp() {
 
   if(data.leetCodeTabId) {
     data.problem = await requestProblemData();
-    console.log('data.problem:');
-    console.log(data.problem);
   }
 
   data.loginType = await requestLoginType();
@@ -67,11 +65,9 @@ async function initializeApp() {
   data.socket = await connectSocket();
 
   data.socket.on('connect', function(msg) {
-    console.log('socket connected')
     data.socket.emit('clientToken',{'id':data.initialMe.id, 'token': data.initialMe.webSocketToken});
 
     data.socket.on("guestSendsOfferToHostApp", function(offer){
-      console.log("guestSendsOfferToHostApp"+offer)
       chrome.tabs.sendMessage(
         data.leetCodeTabId, 
         {'type': "appSendsContentOffer",'offer':offer}
@@ -81,8 +77,11 @@ async function initializeApp() {
     chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       
       if (message.type=="contentSendsAppAnswer"){
-        console.log("contentSendsAppAnswer"+message.answer)
         data.socket.emit('hostSendsAnswerToGuestApp',message.answer);
+      }
+
+      if (message.type=="contentSendsAppResults"){
+        data.socket.emit('hostSendsResultsToGuestApp',message.text);
       }
     })
   });
@@ -288,7 +287,6 @@ class App extends React.Component{
   }  
 
   sendPairingRequest(partnerId){
-    console.log("pairing request sent to "+partnerId)
     this.props.socket.emit('requestPairWith',
       {
         partnerId: partnerId,
@@ -310,11 +308,10 @@ class App extends React.Component{
 
   listenForCodeChange(){
     //if I am the host relay to content when guest edits code
-    this.props.socket.on('guestSendsCodeChange',
-      (function(msg){
+    this.props.socket.on('guestSendsCodeChange',(function(msg){
         chrome.tabs.sendMessage(data.leetCodeTabId, 
         {type: "appSendingContentCodeChange", code: msg});
-      }).bind(this));
+    }).bind(this));
     //if I am the host relay from content when I edit code
     chrome.runtime.onMessage.addListener((function (message, sender, sendResponse) {
       if (message.type == "contentSendingAppCodeChange"){
@@ -330,19 +327,16 @@ class App extends React.Component{
   }
 
   startPairing(partnerId, myRole){
-    console.log("partner: " + partnerId +" myRole: " + myRole)
     this.updateMe('updatePartnerId',partnerId);
     this.updateMe('updatePartnerData',this.state.userList[partnerId]);
-    this.updateMe('updateIsPairingNow',true);
 
     if (myRole=='guest'){
       this.updateMe('updateIsPairingHost',false);
-      //this.goToRoom();
+      this.updateMe('updateIsPairingNow',true);
     }
     if (myRole=='host'){
       this.updateMe('updateIsPairingHost',true);
-      //send data to content script
-      console.log("start pairing me:"+JSON.stringify(this.state.me))
+      this.updateMe('updateIsPairingNow',true);
       //switch tab to leetcode
       chrome.tabs.update(data.leetCodeTabId, { highlighted: true, active: true });
     }
@@ -366,15 +360,12 @@ class App extends React.Component{
 
   listenForUpdateMe(){
     this.props.socket.on('updateMe',(function(user) {
-      console.log("updating me")
       this.setState({'me': user});
-      console.log(this.state.me)
     }).bind(this));
   }
 
   listenForUpdateUser(){
     this.props.socket.on('updateUser',(function(user) {
-      console.log("updating "+user.id)
       let updatedUserList = this.state.userList;
       updatedUserList[user.id]=user;
       this.setState({userList: updatedUserList});
@@ -384,7 +375,6 @@ class App extends React.Component{
   listenForKillUser(){
     this.props.socket.on('killUser',(function(id) {
       if (id==this.state.me.partnerId) this.killPartner();
-      console.log("killing "+id)
       let updatedUserList = this.state.userList;
       delete updatedUserList[id];
       this.setState({userList: updatedUserList});
@@ -393,7 +383,6 @@ class App extends React.Component{
 
   //should be called if host leetcode window is closed
   killPartner(){
-    console.log(this.state.me)
     if (this.state.me.isPairingHost){
       //send message to content, content displays alert
       chrome.tabs.sendMessage(
@@ -422,25 +411,15 @@ class App extends React.Component{
   page(){
     let page
     if (this.state.currentPage=="room"){ 
-          console.log('userlist'+JSON.stringify(this.state.userList))
-          console.log('me'+JSON.stringify(this.state.me))
-          console.log('partner id'+this.state.me.partnerId)
-     //     console.log('partner id'+this.state.me.partnerId)
-     // let partnerEyeDee=
-          //console.log(this.state.me.partnerData)
-      console.log("creating new room")
       page =  
       <Room 
         me={this.state.me}
         socket={this.props.socket}       
         goToLobby={this.goToLobby} 
-        result={this.state.result}
-        input={this.state.input}
-        output={this.state.output}
-        expected={this.state.expected}
       />;
     }
-    if (this.state.currentPage=="lobby") page =  
+    if (this.state.currentPage=="lobby") 
+      page =  
       <Lobby 
         updateMe = {this.updateMe}
         socket={this.props.socket}
@@ -456,7 +435,6 @@ class App extends React.Component{
   render(){
 	return (
 		<div id={this.props.id}>
-			Leetcode Pairing
 			{this.page()}
 		</div>
 	)

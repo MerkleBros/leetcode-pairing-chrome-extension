@@ -58,7 +58,6 @@ app.get('/oauthCallback', function(req, res) {
 // });
 
 app.get('/getRCData', function(req, res) {
-  console.log("getRCData");
   var code = req.query.code;
   auth.getToken(code)
   .then(function(token) {
@@ -148,16 +147,15 @@ app.get('/', function(req, res){
 
 
 io.on('connection', function(socket){
-  console.log('user connected')
-  console.log('connection count: ' + io.engine.clientsCount);
+  //console.log('connection count: ' + io.engine.clientsCount);
   
   socket.on('clientToken', function(msg){
-    console.log("checking client socket token")
+    //console.log("checking client socket token")
 
     // if (serverUserList[msg.id].webSocketToken == msg.token){
     //   console.log("got client socket token")
-    console.log(msg)
-    serverUserList[msg.id].socket = socket;
+    //console.log(msg)
+    if (serverUserList[msg.id]) serverUserList[msg.id].socket = socket;
     // }
     // else{
     //   socket.disconnect(true);
@@ -200,12 +198,14 @@ io.on('connection', function(socket){
       })
       //partner killed
       guest.socket.on('partnerKilled',function(){
-        console.log('partner killed')
         guest.socket.emit('partnerKilled',{})
       })
       host.socket.on('partnerKilled',function(){
-        console.log('partner killed')
         host.socket.emit('partnerKilled',{})
+      })
+      //send code results
+      host.socket.on('hostSendsResultsToGuestApp',function(results){
+        host.socket.to(roomName).emit('hostSendsResultsToGuestApp',results)
       })
 
     }
@@ -258,10 +258,6 @@ io.on('connection', function(socket){
 
 function createMeUser(user){
   let me = createClientUser(user)
-  console.log('me user',JSON.stringify(me) )
-  console.log('token', JSON.stringify(user.token))
-  console.log('partnerId',JSON.stringify(user.partnerId) )
-  console.log('partnerData', JSON.stringify(user.partnerData))
   return Object.assign(
    {token: user.token,    
     isPairingHost:user.isPairingHost,

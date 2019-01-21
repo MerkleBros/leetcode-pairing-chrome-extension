@@ -10,6 +10,11 @@
 	float: right;
 	width: 46%;
 }
+#credits{
+	clear: both;
+	float:right;
+	margin-right: 10%
+}
 
 img{
 	float: left;
@@ -27,12 +32,12 @@ img{
 
 #submitButton{
 	display: block;
-	width: 91%;
+	width: 98%;
 }
 
 textarea {
    resize: none;
-   width: 90%;
+   width: 97%;
 }
 
 .userName{

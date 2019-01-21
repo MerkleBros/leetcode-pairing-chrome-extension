@@ -2,6 +2,12 @@
 	border: 1px solid grey;
 	width:45%;
 	float: left;
+    max-height: 400px;
+    margin-left: 4%;
+}
+
+#leftHalf.noHeight{
+	max-height: none;
 }
 
 #rightHalf{
@@ -12,10 +18,42 @@
 	padding: 5px;
 	border: 1px solid black;
 	border-radius: 3px;
-	font-size: 140%
+	font-size: 140%;
+	margin-right: 4%;
+    margin-top: 0;
 }
 
 video{
 	width: 40%;
 	margin: 0 25%;
+}
+
+.problemData{
+	height: 200px;
+	overflow-y: auto;
+    overflow-x: hidden;
+	font-size: 90%;
+	white-space: pre-wrap;
+	width: 100%;
+}
+
+.resultsBar{
+	background-color: #F5DEB3;
+	height: 120px;
+	overflow-y: auto;
+	margin: 5px;
+	padding: 5px;
+	border: 1px solid black;
+	border-radius: 3px;
+	font-size: 120%;
+    white-space: pre-wrap;
+    width: 95%;
+}
+
+.center{
+	text-align: center;
+}
+
+.CodeMirror {
+	font-size: 12px;
 }

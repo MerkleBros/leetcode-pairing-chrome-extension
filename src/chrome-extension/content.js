@@ -8,13 +8,10 @@ navigator.getUserMedia({ video: true, audio: true }, gotMedia, function (e) {});
 const data = {
   offer:undefined,
   problem:undefined,
-  partner: {
-    name: 'Hello Kitty',
-    avatarUrl: 'https://placekitten.com/g/64/64'
-  },
   authenticationCode: undefined
 };
-//TODO:DELETE partner
+
+let resultsButton,submitButton
 
 chrome.runtime.onMessage.addListener(async function (message, sender, sendResponse) {
   if (message.type == "appWantsProblemData"){
@@ -66,27 +63,53 @@ function getProblemData() {
         description: document.querySelector("div[data-key='description-content'] > div > div:nth-child(2)").innerText,
         language: document.querySelector("#lang-select > div > div > div.ant-select-selection-selected-value").innerText
       }
+     
+      resultsButton = document.querySelector("[id='code-area'] > :nth-child(3) > :nth-child(2) > :nth-child(1)")
+      submitButton = document.querySelector("[id='code-area'] > :nth-child(3) > :nth-child(2) > :nth-child(2)")
+
+      resultsButton.addEventListener('click',function(){
+        getResults('results')
+      })
+      submitButton.addEventListener('click',function(){
+        getResults('submit')
+      })
 
       startLeetCodeObserverScript();
 
       clearInterval(getProblemDataLoop)
       resolve(problem)
-     }
+    }
    },500)
   });
 }
 
-//let notesBox=addNotesBox();
-
-function addNotesBox(){
-  let textArea = document.createElement('textarea');
-  textArea.setAttribute('id', 'notesBox');
-  textArea.setAttribute('cols',55);
-  textArea.setAttribute('rows', 4);
-  textArea.setAttribute('style','position: fixed; z-index: 1000;top: 0px;');
-  document.querySelector('body').appendChild(textArea);
-  return textArea;
+function getResults(type){
+  let counter = 0;
+  let currentType=type;
+  let getResultsLoop = setInterval(function(){
+    counter++;
+    if(counter > 60)clearInterval(getResultsLoop)
+    //results
+    if (currentType=='results' && document.querySelector("[data-key='runcode-result-content']").innerText){
+      chrome.runtime.sendMessage({
+        type: "contentSendsAppResults",
+        text: document.querySelector("[data-key='runcode-result-content']").innerText
+      });
+      clearInterval(getResultsLoop)
+    }
+    //submit    
+    if (currentType=='submit' && document.querySelector("[data-key='submissions-content']> :nth-child(1)> :nth-child(1)> :nth-child(1)> :nth-child(1)").innerText){
+      chrome.runtime.sendMessage({
+        type: "contentSendsAppResults",
+        text: document.querySelector("[data-key='submissions-content']> :nth-child(1)> :nth-child(1)> :nth-child(1)> :nth-child(1)").innerText
+      });
+      clearInterval(getResultsLoop)
+    }
+  },500)
 }
+
+
+
 
 let talkingDiv = document.createElement('div');
 
@@ -151,3 +174,21 @@ window.onunload = function () {
   p.destroy()
   chrome.runtime.sendMessage({type: "leetCodeTabClosed"});
 };
+
+
+
+
+
+
+
+//let notesBox=addNotesBox();
+
+// function addNotesBox(){
+//   let textArea = document.createElement('textarea');
+//   textArea.setAttribute('id', 'notesBox');
+//   textArea.setAttribute('cols',55);
+//   textArea.setAttribute('rows', 4);
+//   textArea.setAttribute('style','position: fixed; z-index: 1000;top: 0px;');
+//   document.querySelector('body').appendChild(textArea);
+//   return textArea;
+// }

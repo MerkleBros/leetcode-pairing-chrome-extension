@@ -2,24 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './lobbyStyles.css';
 
-// const UserArr = [
-//   {
-//     problem:{title:"Easy Problem",
-//              difficulty:"hard",
-//              number: 666,
-//              description: 'Determine if NP=P',
-//              language:"javascript"
-//             },
-//     profileInfo: {
-//       name: 'Hello Kitty',
-//       avatarUrl: 'https://placekitten.com/g/64/64'
-//     }
-//   }
-// ];
-
-// let myName="Hello Kitty"
-
-
 export class Lobby extends React.Component{
   constructor(props){
     super(props)
@@ -28,7 +10,6 @@ export class Lobby extends React.Component{
   render(){
      return (
         <div id={this.props.id}>
-            <button onClick={this.props.goToRoom}>go to room</button><br></br>
             <Chat id="rightHalf" me={this.props.me} socket={this.props.socket} />
             <UserList 
               id = "leftHalf" 
@@ -37,6 +18,10 @@ export class Lobby extends React.Component{
               updateMe = {this.props.updateMe}
               sendPairingRequest={this.props.sendPairingRequest}
             />
+          <div id="credits">
+            Leetcode Pairing By Douglas Lerner and Patrick McCaver. <br></br>
+            Special Thanks to Cory Forsyth and Justin Venezuela
+          </div>
         </div>)
   }
 }
@@ -150,6 +135,7 @@ class UserInfo extends React.Component{
 
   renderPairingButton(){
     if (this.props.me.id!=this.props.user.id && this.props.user.isPairingNow==false &&
+      this.props.me.isPairingNow==false &&
       (this.props.me.hasLeetCodeProblem || this.props.user.hasLeetCodeProblem)){
       return <button onClick={()=>{this.props.sendPairingRequest(this.props.user.id)}} >Pair With Me</button>
     }
@@ -205,7 +191,6 @@ class UserInfo extends React.Component{
 
   submitCustomDescription(event) {
     event.preventDefault();
-    console.log("submitCustomDescription"+JSON.stringify(this.props.user))
     this.props.updateMe(
       "updateCustomDescription",
       this.state.customDescriptionFormText

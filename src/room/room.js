@@ -20,8 +20,7 @@ let codeMirrorOptions={
 export class Room extends React.Component {
   constructor(props){
     super(props)
-              console.log('room props', this.props)
-
+    console.log(this.props.me)
     this.state = {
       codeValue:"", 
       cursorPosition:{ch: 0,line: 0,sticky: null}
@@ -40,22 +39,15 @@ export class Room extends React.Component {
       function(medias){
         mediaStream = medias.getTracks()
       })
-    // .then(medias => {
-    //   mediaStream = medias.getTracks()
-    // })
+
   }
   componentWillUnmount(){
     this.killed = true;
-    console.log("will unmount ID " + this.randomId);
-    console.log(RTCPeerConnection.signalingState)
     peer.destroy();
-    // peer = undefined;
-    // mediaStream.forEach(track => track.stop())
   }
 
   gotMedia (stream) {
     peer = new Peer({ initiator: true, stream: stream })
-    console.log(peer)
     peer.on('signal', (function (offer) {
       //send offer to other peer through websocket
       console.log('sent offer')
@@ -66,11 +58,6 @@ export class Room extends React.Component {
       if (this.killed) {
         return;
       }
-      console.log('got answer')
-      console.log(answer)
-      // peer._pc.signalingState="have-local-offer"
-      console.log(peer);
-      console.log('peer signal ID = ' + this.randomId);
       peer.signal(answer);
     }.bind(this));
 
@@ -83,57 +70,46 @@ export class Room extends React.Component {
   listenForCodeChange(){
     this.props.socket.on('hostSendsCodeChange', (function(msg){
       if (this.state.codeValue!=msg && this.state.lastReceivedCode != msg) {
-        console.log('partner typed something')
-        console.log('partner msg'+msg)
-        console.log('my code value'+this.state.codeValue)
-        console.log('lastReceivedCode'+this.state.lastReceivedCode)
-
         this.setState({lastReceivedCode:msg,codeValue:msg})
       }
     }).bind(this));
+
+    this.props.socket.on('hostSendsResultsToGuestApp',(function(results){
+      this.setState({'results':results})
+    }).bind(this))
   }
 
   render(){
     return (<React.Fragment>
-      <button onClick={this.props.goToLobby}>back to lobby</button><br></br>
-      <div id="leftHalf">
-      <CodeMirror
-        value={this.state.codeValue}
-        options={{
-          mode: 'xml',
-          theme: 'material',
-          lineNumbers: true
-        }}
+      <div id="leftHalf" className="noHeight">
+        <CodeMirror
+          value={this.state.codeValue}
+          options={{
+            mode: 'xml',
+            theme: 'material',
+            lineNumbers: true
+          }}
 
-        onBeforeChange={(editor, data, value) => {
-          this.setState({codeValue: value})
-        }}
-        onChange={(editor, data, value) => {
-          console.log('lastReceivedCode ' + this.state.lastReceivedCode)
-          console.log('value ' + value)
-          if (this.state.lastReceivedCode != value){
-            console.log('I typed something')
-            this.props.socket.emit("guestSendsCodeChange",{code:value});
+          onBeforeChange={(editor, data, value) => {
+            this.setState({codeValue: value})
+          }}
+          onChange={(editor, data, value) => {
+            if (this.state.lastReceivedCode != value){
+              this.props.socket.emit("guestSendsCodeChange",{code:value});
+            }
           }
         }
-      }
-      />
+        />
+        <ResultsBar results={this.state.results}/>
       </div>
       <div id="rightHalf">
+        <div className="center">You Are Pairing With: {this.props.me.partnerData.name}</div>
         <video ref="vidRef"></video>
         <StatusBar me={this.props.me} />
       </div>
   </React.Fragment>)
   }
 }
-        // <StatusBar me={this.props.me} />
-
-        // <StatusBar me={this.props.me}
-        //            result={this.props.result}
-        //            input={this.props.input}
-        //            output={this.props.output}
-        //            expected={this.props.expected}
-        // />
 
 class StatusBar extends React.Component{
   constructor(props){
@@ -142,21 +118,34 @@ class StatusBar extends React.Component{
 
   partnerData(){
     if (this.props.me.isPairingNow){
-      return <div>{this.props.me.partnerData.image}
-        You Are Pairing With: {this.props.me.partnerData.name}</div>
+      return (<div>
+        <div className="center">
+          <br></br>
+          {this.props.me.partnerData.problem.title} 
+        </div>
+        <pre className="problemData">{this.props.me.partnerData.problem.description}</pre>
+        </div>)
     }
   }
 
   render(){
      return (
         <div>
-        {this.partnerData()}
-        <br></br><br></br>
-
+          {this.partnerData()}
         </div>)
   }
 }
-  // Result: {this.props.result}<br></br><br></br>
-  // Input: {this.props.input}<br></br><br></br>
-  // Output: {this.props.output}<br></br><br></br>
-  // Expected: {this.props.expected}
+
+class ResultsBar extends React.Component{
+  constructor(props){
+    super(props)
+  }
+
+  render(){
+     return (
+        <div className="resultsBar">
+          Results:<br></br>
+          <pre>{this.props.results}</pre>
+        </div>)
+  }
+}
