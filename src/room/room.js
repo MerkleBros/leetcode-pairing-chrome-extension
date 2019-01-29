@@ -5,22 +5,39 @@ import './roomStyles.css';
 import {Controlled as CodeMirror} from 'react-codemirror2'
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/material.css';
-require('codemirror/mode/xml/xml');
+require('codemirror/mode/clike/clike');
+require('codemirror/mode/python/python');
 require('codemirror/mode/javascript/javascript');
+require('codemirror/mode/ruby/ruby');
+require('codemirror/mode/swift/swift');
+require('codemirror/mode/go/go');
+require('codemirror/mode/rust/rust');
+require('codemirror/mode/php/php');
+
+//Scala not included in codemirror library, added as clike
+let supportedLanguages = {
+  'C++': 'clike',
+  'Java': 'clike',
+  'Python': 'python',
+  'Python3': 'python',
+  'C': 'clike',
+  'C#': 'clike',
+  'Javascript': 'javascript',
+  'Ruby': 'ruby',
+  'Swift': 'swift',
+  'Go': 'go',
+  'Scala': 'clike',
+  'Kotlin': 'clike',
+  'Rust': 'rust',
+  'PHP': 'php'
+}
 
 let Peer = require('simple-peer')
 let peer,mediaStream
 
-let codeMirrorOptions={   
-  mode: 'xml',
-  theme: 'material',
-  lineNumbers: true 
-}
-
 export class Room extends React.Component {
   constructor(props){
     super(props)
-    console.log(this.props.me)
     this.state = {
       codeValue:"", 
       cursorPosition:{ch: 0,line: 0,sticky: null}
@@ -80,15 +97,21 @@ export class Room extends React.Component {
   }
 
   render(){
+
+    let language = 
+      supportedLanguages[this.props.me.partnerData.problem.language]
+
+    let codeMirrorOptions = {
+      mode: language,
+      theme: 'material',
+      lineNumbers: true 
+    }
+
     return (<React.Fragment>
       <div id="leftHalf" className="noHeight">
         <CodeMirror
           value={this.state.codeValue}
-          options={{
-            mode: 'xml',
-            theme: 'material',
-            lineNumbers: true
-          }}
+          options={codeMirrorOptions}
 
           onBeforeChange={(editor, data, value) => {
             this.setState({codeValue: value})
