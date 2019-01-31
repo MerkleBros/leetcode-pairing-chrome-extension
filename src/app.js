@@ -7,7 +7,7 @@ import { Room } from './room/room.js';
 import { Lobby } from './lobby/lobby.js';
 import io from 'socket.io-client';
 
-const BASE_URL = "https://leetcode-pairing.herokuapp.com/";
+const BASE_URL = "https://leetcode-pairing.herokuapp.com";
 // const TESTING_BASE_URL = "http://localhost:3000";
 // const TESTING_WEBSOCKET_URL = 'http://localhost:5000';
 
