@@ -8,7 +8,7 @@ var hackerschool = require('hackerschool-api');
 var port = process.env.PORT || 3000;
 var serverUrl = 
   process.env.PORT ? 
-  "https://serene-peak-49404.herokuapp.com" :
+  "https://leetcode-pairing.herokuapp.com/" :
   "http://localhost:3000"
 
 var bodyParser = require("body-parser");
