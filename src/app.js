@@ -7,13 +7,13 @@ import { Room } from './room/room.js';
 import { Lobby } from './lobby/lobby.js';
 import io from 'socket.io-client';
 
-//const BASE_URL = "https://serene-peak-49404.herokuapp.com";
-const TESTING_BASE_URL = "http://localhost:3000";
-const TESTING_WEBSOCKET_URL = 'http://localhost:5000';
+const BASE_URL = "https://leetcode-pairing.herokuapp.com/";
+// const TESTING_BASE_URL = "http://localhost:3000";
+// const TESTING_WEBSOCKET_URL = 'http://localhost:5000';
 
-const CURRENT_URL = TESTING_BASE_URL;
-const WEBSOCKET_URL = TESTING_WEBSOCKET_URL;
-//const WEBSOCKET_URL= BASE_URL + ':5000';
+const CURRENT_URL = BASE_URL;
+// const WEBSOCKET_URL = TESTING_WEBSOCKET_URL;
+const WEBSOCKET_URL= BASE_URL + ':5000';
 
 const SERVER_AUTHENTICATION_URL = CURRENT_URL + "/login";
 const RC_DATA_URL = CURRENT_URL + "/getRCData";

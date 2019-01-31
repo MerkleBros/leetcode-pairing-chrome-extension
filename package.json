@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "scripts": {
     "start-server": "nodemon server.js",
+    "start": "nodemon server.js", 
     "build": "webpack --config webpack.prod.js",
     "start-dev": "webpack-dev-server --config webpack.dev.js --inline --hot --watch-content-base --progress"
   },
