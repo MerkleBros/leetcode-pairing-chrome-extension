@@ -25,7 +25,7 @@
     },
     {
       "matches": ["http://localhost:3000/oauthCallback*",
-        "https://leetcode-pairing.herokuapp.com/oauthCallback"], 
+        "https://leetcode-pairing.herokuapp.com/oauthCallback*"], 
       "js": ["contentTwo.js"],
       "run_at": "document_end"
     }
