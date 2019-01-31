@@ -1,7 +1,7 @@
 var express = require('express');
 var app = express();
 var server = require('http').createServer(app);
-var io = require('socket.io')(server);
+var io = require('socket.io').listen(server);
 var path = require('path');
 var hackerschool = require('hackerschool-api');
 
@@ -137,7 +137,7 @@ app.get('/getUserList', function(req,res){
   res.send(createClientUserList(serverUserList));
 });
 
-app.listen(port);
+// app.listen(port);
 //app.use(express.static(__dirname)); // Current directory is root
 app.use(express.static(path.join(__dirname, 'public'))); //  "public" off of current is root
 
@@ -145,6 +145,7 @@ app.get('/', function(req, res){
  res.send("it works")
 });
 
+server.listen(port);
 
 io.on('connection', function(socket){
   //console.log('connection count: ' + io.engine.clientsCount);
@@ -334,5 +335,5 @@ app.use(function (err, req, res, next) {
   res.status(500).send('Something broke!')
 })
 
-server.listen(5000);
-console.log('Listening on port 5000');
+// server.listen(5000);
+// console.log('Listening on port 5000');
