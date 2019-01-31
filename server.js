@@ -8,7 +8,7 @@ var hackerschool = require('hackerschool-api');
 var port = process.env.PORT || 3000;
 var serverUrl = 
   process.env.PORT ? 
-  "https://leetcode-pairing.herokuapp.com/" :
+  "https://leetcode-pairing.herokuapp.com" :
   "http://localhost:3000"
 
 var bodyParser = require("body-parser");
@@ -23,8 +23,8 @@ const clientUserList = {};
 let auth;
 if(process.env.PORT) {
   auth = hackerschool.auth({
-    client_id: "171c0be3d344bb8c36fd2ec72f4df3b92c6620b43dbcbc5b255415e27d609da5",
-    client_secret: "39d74251728bf3119454d2b36982592186382755726de4c58eb7b35736e569ec",
+    client_id: "9d323b83065d3f0dc4c1daeee398d5716afc1409cb1a2933d706d1654325d75b",
+    client_secret: "48d3914e8bebf4c8e424b27fda8178e1e2b8e2473baaf31a4ce0152e8be494d9",
     redirect_uri: serverUrl + "/oauthCallback"
   });
 }
