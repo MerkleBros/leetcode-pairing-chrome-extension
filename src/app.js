@@ -13,7 +13,7 @@ const BASE_URL = "https://leetcode-pairing.herokuapp.com";
 
 const CURRENT_URL = BASE_URL;
 // const WEBSOCKET_URL = TESTING_WEBSOCKET_URL;
-const WEBSOCKET_URL= "leetcode-pairing.herokuapp.com" + ':5000';
+const WEBSOCKET_URL= "ws://leetcode-pairing.herokuapp.com";
 
 const SERVER_AUTHENTICATION_URL = CURRENT_URL + "/login";
 const RC_DATA_URL = CURRENT_URL + "/getRCData";
