@@ -220,6 +220,9 @@ io.on('connection', function(socket){
     // if(serverUserList[message.id].socket.id !== socket.id) {
     //   return;
     // }
+    if(!serverUserList[message.id] || !message.id) {
+      return;
+    }
     switch (message.flag) {
       // TODO: UPdate problem data
       // case "updateLanguage":
