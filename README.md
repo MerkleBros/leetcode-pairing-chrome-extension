@@ -10,7 +10,7 @@ This browser extension was created as a way to allow Recursers (www.recurse.com)
 Front End - React, WebRTC, Chrome API, Oauth2, CodeMirror API
 Back End - Node + Express, Socket.io
 
-### Instructions:
+### Instructions
 
 To pair on a Leetcode problem of your choosing:
 
@@ -34,7 +34,7 @@ For Recursers: select the "Login Type: RC" button to enable login through your R
 
 To log out: simply close the browser tab/window when you are done pairing and you will be automatically logged out.
 
-##### Run
+### Run
 - Clone the repo
 - `npm install`
 - `npm run start`
