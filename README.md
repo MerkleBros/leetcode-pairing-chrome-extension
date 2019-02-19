@@ -1,9 +1,9 @@
 # Leetcode Pairing Chrome Extension
 A Chrome extension for pairing on Leetcode problems.
 
-![screenshot](https://i.ibb.co/2nwk9cN/leetcode-pairing-screenshot.png)
-
 Live version: https://chrome.google.com/webstore/detail/leetcode-pairing/jeonpfbokpeagbojffcijgpcpldgebfb
+
+![screenshot](https://i.ibb.co/2nwk9cN/leetcode-pairing-screenshot.png)
 
 ### Motivation
 This browser extension was created as a way to allow Recursers (www.recurse.com) to continuing pair programming after their batch ended. It allows users to pair on LeetCode.com coding interview/algorithm problems from anywhere in the world, using a shared code editor and real-time video chat, all in the browser.
