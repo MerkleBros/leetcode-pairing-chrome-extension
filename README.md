@@ -1,6 +1,8 @@
 # Leetcode Pairing Chrome Extension
 A Chrome extension for pairing on Leetcode problems.
 
+![screenshot](https://i.ibb.co/2nwk9cN/leetcode-pairing-screenshot.png)
+
 Live version: https://chrome.google.com/webstore/detail/leetcode-pairing/jeonpfbokpeagbojffcijgpcpldgebfb
 
 ### Motivation
